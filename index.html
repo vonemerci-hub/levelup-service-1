@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Levmarco — L'Excellence Ivoiro-Congolaise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firebasestorage.googleapis.com"> <!-- Optimisation réseau Firebase -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C8A96E;--gold-lt:#E5C990;--gold-dk:#8B6914;
+  --ink:#080604;--ink-mid:#141210;--ink-soft:#1E1B17;
+  --cream:#F8F3EC;--muted:#7A6D62;--dim:#4A3D30;--dimmer:#2A2018;
+}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:#D6CCBF;font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+button{background:none;border:none;font-family:inherit;cursor:pointer;}
+img{display:block;max-width:100%}
+::-webkit-scrollbar{display:none} /* Barre de défilement invisible */
+body { -ms-overflow-style: none; scrollbar-width: none; } /* Pour Firefox et IE */
+
+/* BLUR FIX ON SCROLL (Uniquement sur le texte, pas sur les images) */
+.hero-title, .section-title, .card-name, p { transform: translateZ(0); backface-visibility: hidden; }
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:180px}
+
+/* UTILS */
+.gold-rule{display:inline-block;width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);vertical-align:middle}
+.tag-badge{font-size:9px;text-transform:uppercase;letter-spacing:.18em;padding:4px 10px;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.3);color:var(--gold-lt);backdrop-filter:blur(8px)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1)}
+.reveal.on{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.09s}.d2{transition-delay:.18s}.d3{transition-delay:.27s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:24px 48px;transition:padding .5s,background .5s,backdrop-filter .5s,border-color .5s;border-bottom:1px solid transparent}
+nav.scrolled{padding:14px 48px;background:rgba(8,6,4,.8);backdrop-filter:blur(20px) saturate(150%);border-color:rgba(200,169,110,.07)}
+.nav-logo-main{font-family:'Cinzel',serif;font-size:22px;letter-spacing:.3em;color:var(--cream);text-transform:uppercase}
+.nav-logo-main span{color:var(--gold)}
+.nav-logo-sub{font-size:7px;text-transform:uppercase;letter-spacing:.5em;color:rgba(200,169,110,.4);margin-top:3px}
+.nav-links{display:flex;gap:40px}
+.nav-links a{font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:rgba(215,204,190,.55);transition:color .3s}
+.nav-links a:hover{color:var(--gold)}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-btn{display:flex;align-items:center;gap:7px;font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#6A5D50;transition:color .3s}
+.nav-btn:hover{color:var(--gold)}
+.nav-divider{width:1px;height:16px;background:rgba(255,255,255,.07)}
+.cart-badge{position:absolute;top:-8px;right:-8px;width:16px;height:16px;border-radius:50%;background:var(--gold);color:var(--ink);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;display:none}
+
+/* HERO */
+.hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.5;animation:heroZoom 24s ease-in-out infinite alternate}
+@keyframes heroZoom{from{transform:scale(1)}to{transform:scale(1.08)}}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,6,4,.65) 0%,rgba(8,6,4,.2) 50%,rgba(8,6,4,.95) 100%)}
+.hero-content{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:0 24px}
+.hero-eyebrow{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;font-size:9px;text-transform:uppercase;letter-spacing:.5em;color:var(--gold)}
+.hero-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(52px,9vw,108px);line-height:.95;color:var(--cream);margin-bottom:22px}
+.hero-title em{background:linear-gradient(135deg,var(--gold-lt) 0%,var(--gold) 50%,var(--gold-dk) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:400}
+.hero-sub{font-size:14px;font-weight:300;line-height:1.9;color:#8A7D6E;max-width:500px;margin:0 auto 40px}
+.hero-ctas{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.btn-gold{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 40px;background:var(--gold);color:var(--ink);font-size:10px;text-transform:uppercase;letter-spacing:.3em;font-weight:500;transition:opacity .3s}
+.btn-gold:hover{opacity:.86}
+.btn-ghost{display:inline-flex;align-items:center;gap:10px;font-size:10px;text-transform:uppercase;letter-spacing:.3em;color:#5A4D40;transition:color .3s,gap .3s}
+.btn-ghost:hover{color:var(--gold);gap:14px}
+.scroll-line{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2;opacity:.3}
+.scroll-line-bar{width:1px;height:56px;background:linear-gradient(to bottom,var(--gold),transparent)}
+.scroll-line span{font-size:8px;text-transform:uppercase;letter-spacing:.45em;color:var(--gold)}
+
+/* MARQUEE */
+.marquee-section{border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);background:var(--ink-mid);padding:18px 0;overflow:hidden}
+.marquee-track{display:flex;white-space:nowrap;animation:marqueeAnim 22s linear infinite}
+@keyframes marqueeAnim{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{font-size:9px;text-transform:uppercase;letter-spacing:.35em;color:var(--dim);padding:0 28px}
+.marquee-dot{color:var(--gold);font-size:8px;opacity:.35}
+
+/* STORY */
+.story{background:var(--ink-mid);padding:120px 0}
+.section-inner{max-width:1360px;margin:0 auto;padding:0 48px}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
+.story-img-wrap{position:relative}
+.story-img-main{width:100%;aspect-ratio:4/5;object-fit:cover;position:relative;z-index:1}
+.story-img-accent{position:absolute;bottom:-36px;right:-28px;z-index:2;width:220px;aspect-ratio:1;object-fit:cover;border:4px solid var(--ink-mid);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.story-img-frame{position:absolute;top:20px;left:20px;right:-20px;bottom:-20px;border:1px solid rgba(200,169,110,.1);z-index:0}
+.section-eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:20px;font-size:9px;text-transform:uppercase;letter-spacing:.45em;color:var(--gold)}
+.section-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(36px,4.5vw,62px);line-height:1.1;color:var(--cream);margin-bottom:28px}
+.section-title em{font-weight:400;color:var(--gold-lt)}
+.story-text{font-size:14px;line-height:1.95;color:#6A5D50;font-weight:300}
+.story-text p+p{margin-top:16px}
+.story-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;padding-top:40px;border-top:1px solid rgba(255,255,255,.05)}
+.stat-num{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:38px;color:var(--gold);line-height:1}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--dim);margin-top:6px}
+
+/* SVG ARTWORK */
+.story-svg-wrap{position:relative;width:100%;aspect-ratio:4/5;background:var(--ink-mid);display:flex;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(0,0,0,.8)}
+.story-custom-svg{width:100%;height:100%}
+.svg-claw{stroke-dasharray:700;stroke-dashoffset:700}
+.reveal.on .svg-claw{animation:drawClaw 1.8s cubic-bezier(.16,1,.3,1) forwards}
+.reveal.on .svg-claw.c1{animation-delay:0.3s}
+.reveal.on .svg-claw.c2{animation-delay:0.5s}
+@keyframes drawClaw{to{stroke-dashoffset:0}}
+.svg-pulse{animation:pulse 4s ease-in-out infinite alternate}
+@keyframes pulse{0%{opacity:0.6}100%{opacity:0.9}}
+
+/* MENU */
+.menu-section{background:var(--ink);padding:120px 0}
+.menu-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:60px;flex-wrap:wrap;gap:32px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{font-size:9px;text-transform:uppercase;letter-spacing:.2em;font-weight:500;padding:9px 18px;border:1px solid rgba(255,255,255,.08);color:#4A3D30;transition:all .3s}
+.filter-btn:hover{border-color:rgba(200,169,110,.3);color:var(--gold)}
+.filter-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.menu-count{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--dimmer);margin-bottom:40px}
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px 28px}
+.menu-card{display:flex;flex-direction:column; content-visibility: auto; contain-intrinsic-size: 10px 400px;} /* Optimisation lourde du rendu */
+.card-img-wrap{position:relative;overflow:hidden;aspect-ratio:3/4;margin-bottom:16px; background:var(--ink-mid);} /* Fond d'attente (skeleton) */
+.card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s cubic-bezier(.16,1,.3,1); image-rendering: high-quality; -webkit-transform: translateZ(0); transform: translateZ(0);}
+.menu-card:hover .card-img-wrap img{transform:scale(1.06) translateZ(0)}
+.card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,6,4,.85) 0%,rgba(8,6,4,.1) 35%,rgba(8,6,4,0) 100%);transition:opacity .5s}
+.menu-card:hover .card-overlay{opacity:.6}
+.card-tag{position:absolute;top:12px;left:12px;z-index:2}
+.card-cta{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;padding-bottom:24px;z-index:2;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.menu-card:hover .card-cta{opacity:1;transform:translateY(0)}
+.card-add-btn{font-size:10px;text-transform:uppercase;letter-spacing:.25em;font-weight:500;padding:10px 28px;background:var(--gold);color:var(--ink);transition:opacity .2s}
+.card-add-btn:hover{opacity:.85}
+.card-add-btn.added{background:rgba(20,50,30,.9);color:#6ee7a0;border:1px solid #3a9b6a}
+.card-body{padding:0 2px}
+.card-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:7px}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream);font-weight:500;line-height:1.2;transition:color .3s;flex:1}
+.menu-card:hover .card-name{color:var(--gold)}
+.card-price{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--gold);white-space:nowrap}
+.card-price sup{font-size:13px;vertical-align:super}
+.card-desc{font-size:12px;line-height:1.75;color:#6A5D50;font-weight:300}
+
+/* RESA */
+.resa-band{background:var(--ink-mid);padding:120px 48px;text-align:center;position:relative;overflow:hidden}
+.resa-band::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;border-radius:50%;background:var(--gold);opacity:.032;filter:blur(100px);pointer-events:none}
+.resa-eyebrow{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px;font-size:9px;text-transform:uppercase;letter-spacing:.45em;color:var(--gold)}
+.resa-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(36px,5vw,62px);color:var(--cream);margin:0 0 18px;line-height:1.1}
+.resa-title em{font-weight:400}
+.resa-sub{font-size:14px;color:#5A4D40;font-weight:300;line-height:1.9;margin-bottom:40px}
+
+/* FOOTER */
+footer{background:var(--ink);border-top:1px solid rgba(255,255,255,.04);padding:80px 48px 40px}
+.footer-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:60px;max-width:1360px;margin:0 auto 64px}
+.footer-logo-main{font-family:'Cinzel',serif;font-size:20px;letter-spacing:.3em;color:var(--cream);text-transform:uppercase}
+.footer-logo-main span{color:var(--gold)}
+.footer-logo-sub{font-size:7px;text-transform:uppercase;letter-spacing:.5em;color:rgba(200,169,110,.32);margin:4px 0 16px}
+.footer-desc{font-size:12px;font-weight:300;line-height:1.85;color:var(--dim)}
+.footer-heading{font-size:8px;text-transform:uppercase;letter-spacing:.45em;color:var(--gold);margin-bottom:20px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:12px;font-weight:300;color:var(--dim);transition:color .3s}
+.footer-links a:hover{color:var(--gold)}
+.footer-address{font-size:12px;font-weight:300;line-height:1.9;color:var(--dim);font-style:normal}
+.footer-address a{transition:color .3s}
+.footer-address a:hover{color:var(--gold)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;max-width:1360px;margin:0 auto;padding-top:32px;border-top:1px solid rgba(255,255,255,.04)}
+.footer-copy{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--dimmer)}
+.footer-socials{display:flex;align-items:center;gap:24px}
+.footer-socials a{font-size:9px;text-transform:uppercase;letter-spacing:.25em;color:var(--dimmer);transition:color .3s}
+.footer-socials a:hover{color:var(--gold)}
+.footer-socials span{color:var(--dimmer);font-size:7px}
+
+/* CART PANEL */
+#cart-overlay{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .4s}
+#cart-overlay.open{opacity:1;pointer-events:all}
+#cart-panel{position:fixed;top:0;right:0;bottom:0;z-index:71;width:100%;max-width:420px;display:flex;flex-direction:column;background:rgba(12,9,6,.97);backdrop-filter:blur(24px);border-left:1px solid rgba(200,169,110,.09);transform:translateX(100%);transition:transform .5s cubic-bezier(.16,1,.3,1);box-shadow:-20px 0 80px rgba(0,0,0,.6)}
+#cart-panel.open{transform:translateX(0)}
+.cart-head{display:flex;justify-content:space-between;align-items:center;padding:22px 28px;border-bottom:1px solid rgba(255,255,255,.05)}
+.cart-head-left p:first-child{font-size:8px;text-transform:uppercase;letter-spacing:.5em;color:var(--gold);margin-bottom:4px}
+.cart-head-left h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--cream)}
+.cart-head-right{display:flex;align-items:center;gap:14px}
+.btn-clear{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#3A2D20;transition:color .3s}
+.btn-clear:hover{color:#f87171}
+.btn-close-cart{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.08);color:#5A4D40;transition:all .3s}
+.btn-close-cart:hover{border-color:rgba(200,169,110,.3);color:var(--gold)}
+#cart-items{flex:1;overflow-y:auto;padding:16px;scrollbar-width:none}
+#cart-items::-webkit-scrollbar{display:none}
+.cart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:60px 0}
+.cart-empty-icon{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,.07)}
+.cart-empty p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:#4A3D30}
+.cart-empty span{font-size:9px;text-transform:uppercase;letter-spacing:.25em;color:var(--gold);border-bottom:1px solid rgba(200,169,110,.3);padding-bottom:3px;cursor:none}
+.cart-item{display:flex;gap:14px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.04);transition:border-color .3s}
+.cart-item:hover{border-color:rgba(200,169,110,.12)}
+.cart-item-img{width:60px;height:74px;object-fit:cover;flex-shrink:0}
+.cart-item-body{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.cart-item-top{display:flex;justify-content:space-between;gap:8px}
+.cart-item-name{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--cream);font-weight:400;line-height:1.3}
+.cart-item-price{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--gold);white-space:nowrap}
+.cart-item-cat{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#3A2D20;margin-top:3px}
+.cart-item-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.qty-ctrl{display:flex;align-items:center;border:1px solid rgba(255,255,255,.08)}
+.qty-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#5A4D40;transition:color .3s;line-height:1}
+.qty-btn:hover{color:var(--gold)}
+.qty-num{width:24px;text-align:center;font-size:12px;color:var(--cream);font-weight:500}
+.btn-del{color:#2A2018;transition:color .3s;font-size:17px}
+.btn-del:hover{color:#f87171}
+.cart-foot{padding:24px 28px;border-top:1px solid rgba(255,255,255,.05);background:rgba(8,6,4,.85)}
+.cart-lines{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.cart-line{display:flex;justify-content:space-between;font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#4A3D30}
+.cart-line.accent span:last-child{color:var(--gold)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.04)}
+.cart-total-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.25em;color:#5A4D40}
+.cart-total-amt{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:40px;color:var(--gold);font-weight:400;line-height:1}
+.cart-total-amt sup{font-size:22px}
+.btn-checkout{width:100%;padding:16px;background:var(--gold);color:var(--ink);font-size:10px;text-transform:uppercase;letter-spacing:.3em;font-weight:500;transition:opacity .3s}
+.btn-checkout:hover{opacity:.88}
+
+/* AUTH MODAL */
+#auth-overlay{position:fixed;inset:0;z-index:72;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .4s}
+#auth-overlay.open{opacity:1;pointer-events:all}
+#auth-box{width:100%;max-width:420px;padding:48px 40px;background:rgba(14,11,8,.97);border:1px solid rgba(200,169,110,.1);backdrop-filter:blur(24px);transform:translateY(20px);transition:transform .5s cubic-bezier(.16,1,.3,1);position:relative}
+#auth-overlay.open #auth-box{transform:translateY(0)}
+.btn-close-auth{position:absolute;top:18px;right:18px;color:#4A3D30;transition:color .3s;font-size:20px}
+.btn-close-auth:hover{color:var(--gold)}
+.auth-eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.45em;color:var(--gold);text-align:center;margin-bottom:10px}
+.auth-title{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--cream);text-align:center;margin-bottom:32px}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border:1px solid rgba(255,255,255,.07);color:#8B7D6E;font-size:10px;text-transform:uppercase;letter-spacing:.2em;transition:border-color .3s,color .3s;margin-bottom:24px}
+.btn-google:hover{border-color:rgba(200,169,110,.3);color:var(--gold)}
+.auth-sep{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.auth-sep div{flex:1;height:1px;background:rgba(255,255,255,.05)}
+.auth-sep span{font-size:9px;text-transform:uppercase;letter-spacing:.25em;color:#3A2D20}
+.field-wrap{position:relative;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:24px;padding-bottom:12px}
+.field-wrap input{width:100%;background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--cream);padding-top:18px}
+.field-wrap input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #0e0b08 inset!important;-webkit-text-fill-color:var(--cream)!important}
+.field-wrap label{position:absolute;left:0;top:14px;font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:#4A3D30;pointer-events:none;transform-origin:left;transition:transform .25s,color .25s}
+.field-wrap input:focus~label,.field-wrap input:not(:placeholder-shown)~label{transform:translateY(-18px) scale(.85);color:var(--gold)}
+.btn-auth{width:100%;padding:15px;background:var(--gold);color:var(--ink);font-size:10px;text-transform:uppercase;letter-spacing:.3em;font-weight:500;transition:opacity .3s;margin-bottom:18px}
+.btn-auth:hover{opacity:.88}
+.auth-switch{text-align:center;font-size:11px;color:#4A3D30}
+.auth-switch button{color:var(--gold);transition:color .3s}
+.auth-switch button:hover{color:var(--gold-lt)}
+
+/* PROMO MODAL (AGENCY CALL TO ACTION) */
+#promo-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .4s}
+#promo-overlay.open{opacity:1;pointer-events:all}
+#promo-box{width:100%;max-width:420px;padding:48px 40px;background:rgba(14,11,8,.97);border:1px solid rgba(200,169,110,.3);backdrop-filter:blur(24px);transform:translateY(20px);transition:transform .5s cubic-bezier(.16,1,.3,1);position:relative;text-align:center;}
+#promo-overlay.open #promo-box{transform:translateY(0)}
+.promo-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--cream);margin-bottom:16px;line-height:1.2}
+.promo-text{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:32px;font-weight:300}
+.btn-insta{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;background:linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.2em;transition:opacity .3s;width:100%;font-weight:500;border-radius:4px;}
+.btn-insta:hover{opacity:.9;color:#fff;}
+.btn-email{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--cream);font-size:10px;text-transform:uppercase;letter-spacing:.2em;transition:all .3s;width:100%;font-weight:500;border-radius:4px;margin-top:12px;}
+.btn-email:hover{background:rgba(255,255,255,0.1);}
+
+/* AI ASSISTANT CHATBOT */
+#chat-overlay{position:fixed;inset:0;z-index:79;background:transparent;display:none;}
+#chat-overlay.open{display:block;}
+#chat-btn{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform .3s, background .3s;cursor:pointer}
+#chat-btn:hover{transform:scale(1.08);background:var(--gold-lt)}
+.chat-unread-badge{position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:10px;font-weight:bold;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);font-family:sans-serif;}
+#chat-panel{position:fixed;bottom:100px;right:30px;width:340px;height:480px;background:rgba(14,11,8,.98);border:1px solid rgba(200,169,110,.2);border-radius:12px;z-index:81;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.8);backdrop-filter:blur(24px);transform:translateY(20px);opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.16,1,.3,1)}
+#chat-panel.open{transform:translateY(0);opacity:1;pointer-events:all}
+.chat-head{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center}
+.chat-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.chat-chips::-webkit-scrollbar{display:none;}
+.chat-chip{flex-shrink:0;background:rgba(200,169,110,.08);border:1px solid rgba(200,169,110,.2);color:var(--gold-lt);font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .3s}
+.chat-chip:hover{background:var(--gold);color:var(--ink)}
+.chat-head-info{display:flex;align-items:center;gap:10px}
+.chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--ink);font-weight:bold;font-family:'Cinzel',serif}
+.chat-title{font-size:12px;color:var(--cream);font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.chat-status{font-size:9px;color:#6ee7a0;letter-spacing:.1em;text-transform:uppercase}
+.chat-body{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.chat-body::-webkit-scrollbar{display:none}
+.msg{max-width:85%;padding:12px 16px;font-size:12px;line-height:1.5;border-radius:8px}
+.msg.bot{background:rgba(255,255,255,.05);color:var(--cream);align-self:flex-start;border-bottom-left-radius:2px}
+.msg.user{background:var(--gold);color:var(--ink);align-self:flex-end;border-bottom-right-radius:2px;font-weight:500}
+.typing .dot {display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin-right:3px;animation:typingBounce 1.4s infinite ease-in-out both;}
+.typing .dot:nth-child(1) { animation-delay: -0.32s; }
+.typing .dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+.chat-foot{padding:16px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:10px}
+.chat-input{flex:1;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:10px 16px;color:var(--cream);font-size:12px;outline:none;font-family:inherit}
+.chat-input:focus{border-color:var(--gold)}
+.chat-send{width:36px;height:36px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;transition:opacity .3s;border:none;cursor:pointer}
+.chat-send:hover{opacity:.8}
+
+/* TOAST */
+#toast{position:fixed;top:88px;right:20px;z-index:90;background:rgba(12,9,6,.97);border:1px solid rgba(200,169,110,.25);backdrop-filter:blur(20px);padding:16px 22px;display:flex;align-items:center;gap:12px;transform:translateX(calc(100% + 30px));transition:transform .45s cubic-bezier(.16,1,.3,1);min-width:260px;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#toast.show{transform:translateX(0)}
+#toast-icon{font-size:18px;color:var(--gold)}
+#toast-title{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:rgba(200,169,110,.55);margin-bottom:3px}
+#toast-name{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--cream)}
+
+/* ITEM ENTER */
+@keyframes itemEnter{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.menu-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){
+nav{padding:18px 24px}nav.scrolled{padding:12px 24px}
+.nav-links{display:none}
+.section-inner{padding:0 24px}
+.story-grid{grid-template-columns:1fr;gap:60px}
+.story-img-accent,.story-img-frame{display:none}
+.story-svg-wrap{box-shadow:0 15px 30px rgba(0,0,0,.6)}
+.resa-band{padding:80px 24px}
+footer{padding:60px 24px 32px}
+.footer-grid{grid-template-columns:1fr;gap:40px}
+}
+@media(max-width:860px){.menu-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.menu-grid{grid-template-columns:1fr}}
+</style>
+
+</head>
+<body>
+
+<!-- TOAST -->
+
+<div id="toast">
+  <span id="toast-icon">✓</span>
+  <div>
+    <div id="toast-title">Ajouté au panier</div>
+    <div id="toast-name"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+
+<nav id="main-nav">
+  <a href="#" onclick="scrollToTop(event)">
+    <div class="nav-logo-main">LEV<span>MARCO</span></div>
+    <div class="nav-logo-sub">Abidjan · Kinshasa</div>
+  </a>
+  <div class="nav-links">
+    <a href="#menu">La Carte</a>
+    <a href="#story">Notre Histoire</a>
+    <a href="#resa">Réserver</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openAuth()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="hidden md:inline">Compte</span>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="nav-btn" onclick="openCart()" style="position:relative">
+      <div style="position:relative">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-badge" id="cart-badge">0</span>
+      </div>
+      <span id="cart-label">Panier</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+
+<section class="hero">
+  <div class="hero-bg">
+    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=85&w=1920" alt="">
+    <div class="hero-grad"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-eyebrow reveal"><span class="gold-rule"></span> Une fusion d'exception <span class="gold-rule"></span></div>
+    <h1 class="hero-title reveal d1">L'Art <em>Gastronomique</em><br>Africain</h1>
+    <p class="hero-sub reveal d2">Une célébration audacieuse des saveurs d'Abidjan et de Kinshasa,<br>pensée pour les palais les plus exigeants.</p>
+    <div class="hero-ctas reveal d3">
+      <a href="#menu" class="btn-gold">Découvrir la Carte</a>
+      <a href="#story" class="btn-ghost">Notre Histoire <span>→</span></a>
+    </div>
+  </div>
+  <div class="scroll-line">
+    <div class="scroll-line-bar"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack"></div>
+</div>
+
+<!-- STORY -->
+
+<section class="story" id="story">
+  <div class="section-inner">
+    <div class="story-grid">
+      <div class="story-svg-wrap reveal">
+        <svg viewBox="0 0 500 600" class="story-custom-svg" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--gold-lt)" />
+              <stop offset="50%" stop-color="var(--gold)" />
+              <stop offset="100%" stop-color="var(--gold-dk)" />
+            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <!-- Background Plate -->
+          <rect width="500" height="600" fill="#0a0806" />
+
+          <!-- Decorative Frames -->
+          <rect x="25" y="25" width="450" height="550" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-opacity="0.3" />
+          <rect x="35" y="35" width="430" height="530" fill="none" stroke="url(#goldGrad)" stroke-width="0.5" stroke-opacity="0.1" />
+
+          <!-- Empreinte d'Éléphant Abstract (Côte d'Ivoire) -->
+          <g opacity="0.08" transform="translate(125, 220)">
+            <circle cx="125" cy="150" r="90" fill="url(#goldGrad)" />
+            <circle cx="40" cy="40" r="30" fill="url(#goldGrad)" />
+            <circle cx="125" cy="10" r="35" fill="url(#goldGrad)" />
+            <circle cx="210" cy="40" r="30" fill="url(#goldGrad)" />
+          </g>
+
+          <!-- Défense d'Éléphant (L'Ivoire) -->
+          <path d="M 80 480 C 20 200, 180 120, 260 100 C 280 95, 300 100, 310 110 C 220 130, 110 240, 110 480 Z" fill="url(#goldGrad)" class="svg-pulse" />
+
+          <!-- Griffures de Léopard Abstract (RDC) -->
+          <g filter="url(#glow)">
+            <path d="M 380 150 Q 280 320 120 400" fill="none" stroke="var(--gold-lt)" stroke-width="6" stroke-linecap="round" class="svg-claw" />
+            <path d="M 430 190 Q 330 360 170 440" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" class="svg-claw c1" />
+            <path d="M 480 240 Q 380 410 220 490" fill="none" stroke="var(--gold-dk)" stroke-width="6" stroke-linecap="round" class="svg-claw c2" />
+          </g>
+
+          <!-- Signature Emblem -->
+          <text x="250" y="530" font-family="'Cinzel', serif" font-size="12" fill="var(--gold-lt)" text-anchor="middle" letter-spacing="0.5em" opacity="0.7">L'EMPREINTE & LA GRIFFE</text>
+        </svg>
+      </div>
+      <div class="reveal d2">
+        <div class="section-eyebrow"><span class="gold-rule"></span> Notre Héritage</div>
+        <h2 class="section-title">Deux cultures,<br><em>un seul festin</em></h2>
+        <div class="story-text">
+          <p>Levmarco est né d'une passion partagée : porter sur table la richesse des deux poumons culinaires de l'Afrique. Chaque plat raconte une histoire, chaque saveur est un voyage.</p>
+          <p>Nos chefs puisent dans l'héritage des mères de famille d'Abidjan et des mamas de Kinshasa, revisitant les recettes ancestrales avec une précision gastronomique contemporaine.</p>
+        </div>
+        <div class="story-stats">
+          <div><div class="stat-num">50+</div><div class="stat-lbl">Plats au menu</div></div>
+          <div><div class="stat-num">2</div><div class="stat-lbl">Cultures célébrées</div></div>
+          <div><div class="stat-num">100%</div><div class="stat-lbl">Produits frais</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+
+<section class="menu-section" id="menu">
+  <div class="section-inner">
+    <div class="menu-header">
+      <div class="reveal">
+        <div class="section-eyebrow"><span class="gold-rule"></span> Notre Vitrine</div>
+        <h2 class="section-title" style="margin-bottom:0">La Carte<br><em style="color:rgba(215,204,190,.22)">D'Exception</em></h2>
+      </div>
+      <div class="filters reveal d1" id="filters"></div>
+    </div>
+    <div class="menu-count" id="menuCount"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<!-- RESERVATION -->
+
+<section class="resa-band" id="resa">
+  <div class="resa-eyebrow reveal"><span class="gold-rule"></span> Expérience Complète <span class="gold-rule"></span></div>
+  <h2 class="resa-title reveal d1">Réservez votre<br><em>table ce soir</em></h2>
+  <p class="resa-sub reveal d2">Vivez l'expérience Levmarco dans son intégralité.<br>Table dressée, ambiance tamisée, service d'exception.</p>
+  <button onclick="openPromoModal()" class="btn-gold reveal d3" style="display:inline-flex; cursor:pointer;">Réserver une table &nbsp;→</button>
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo-main">LEV<span>MARCO</span></div>
+      <div class="footer-logo-sub">Abidjan · Kinshasa</div>
+      <p class="footer-desc">L'alliance parfaite entre les saveurs vibrantes d'Abidjan et la générosité de Kinshasa, servie avec l'élégance de la haute gastronomie.</p>
+    </div>
+    <div>
+      <div class="footer-heading">Navigation</div>
+      <ul class="footer-links">
+        <li><a href="#menu">La Carte</a></li>
+        <li><a href="#story">Notre Histoire</a></li>
+        <li><a href="#resa">Réservations</a></li>
+        <li><a href="#">Presse</a></li>
+        <li><a href="mailto:contact@levelup-ecosystem.com">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Nous Trouver</div>
+      <address class="footer-address">
+        <strong style="color:var(--gold-lt);">Abidjan</strong><br>
+        Rue des Jardins, Cocody, Côte d'Ivoire<br>
+        <a href="tel:+2250000000000">+225 00 00 00 00 00</a><br><br>
+        <strong style="color:var(--gold-lt);">Kinshasa</strong><br>
+        Boulevard du 30 Juin, Gombe, RDC<br>
+        <a href="tel:+2430000000000">+243 00 00 00 00 00</a>
+      </address>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© <span id="yr"></span> Levmarco. Tous droits réservés.</span>
+    <div class="footer-socials">
+      <a href="https://www.instagram.com/levelup.rb?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr" target="_blank">Instagram</a><span>✦</span>
+      <a href="#">Facebook</a><span>✦</span>
+      <a href="#">TikTok</a>
+    </div>
+  </div>
+  
+  <!-- SIGNATURE AGENCE -->
+  <div style="text-align: center; margin-top: 40px; padding-top: 20px; font-size: 8px; text-transform: uppercase; letter-spacing: 0.4em; color: var(--dim); border-top: 1px dashed rgba(200,169,110,0.1);">
+    Powered by <a href="https://www.instagram.com/levelup.rb?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr" target="_blank" style="color: var(--gold); font-weight: 600; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">LevelUp Ecosystem</a>
+  </div>
+</footer>
+
+<!-- CART PANEL -->
+
+<div id="cart-overlay" onclick="closeCart()"></div>
+<div id="cart-panel">
+  <div class="cart-head">
+    <div class="cart-head-left">
+      <p>Levmarco</p>
+      <h2>L'Addition</h2>
+    </div>
+    <div class="cart-head-right">
+      <button class="btn-clear" id="btn-clear" onclick="clearCart()" style="display:none">Vider</button>
+      <button class="btn-close-cart" onclick="closeCart()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="cart-items"></div>
+  <div class="cart-foot" id="cart-foot" style="display:none">
+    <div class="cart-lines">
+      <div class="cart-line"><span>Sous-total HT</span><span id="subtotal-val"></span></div>
+      <div class="cart-line"><span>TVA 10%</span><span id="tva-val"></span></div>
+      <div class="cart-line accent"><span>Frais de service</span><span>À la caisse</span></div>
+    </div>
+    <div class="cart-total-row">
+      <span class="cart-total-lbl">Total TTC</span>
+      <span class="cart-total-amt"><span id="total-val">0</span><sup>$</sup></span>
+    </div>
+    <button class="btn-checkout" id="btn-checkout" onclick="openPromoModal()">Commander</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+
+<div id="auth-overlay" onclick="handleAuthClick(event)">
+  <div id="auth-box">
+    <button class="btn-close-auth" onclick="closeAuth()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <div class="auth-eyebrow">Espace Privé</div>
+    <h2 class="auth-title" id="auth-title">Connexion</h2>
+    <button class="btn-google" onclick="openPromoModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#C8A96E" d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.32-1.9 4.36-1.16 1.16-2.96 2.4-5.94 2.4-4.8 0-8.62-3.88-8.62-8.68s3.84-8.68 8.62-8.68c2.6 0 4.56 1.04 5.94 2.36l2.32-2.32C18.72 1.64 15.96 0 12.48 0 5.58 0 0 5.58 0 12.48s5.58 12.48 12.48 12.48c3.76 0 6.6-1.24 8.92-3.64 2.4-2.4 3.12-5.76 3.12-8.4 0-.6-.04-1.2-.12-1.8h-11.92z"/></svg>
+      Continuer avec Google
+    </button>
+    <div class="auth-sep"><div></div><span>Ou</span><div></div></div>
+    <div id="auth-name-field" style="display:none">
+      <div class="field-wrap"><input type="text" placeholder=" " id="auth-name"><label for="auth-name">Nom complet</label></div>
+    </div>
+    <div class="field-wrap"><input type="email" placeholder=" " id="auth-email"><label for="auth-email">Adresse e-mail</label></div>
+    <div class="field-wrap"><input type="password" placeholder=" " id="auth-pass"><label for="auth-pass">Mot de passe</label></div>
+    <button class="btn-auth" id="btn-auth" onclick="openPromoModal()">Se Connecter</button>
+    <div class="auth-switch">
+      <span id="auth-switch-text">Pas encore de compte ? </span>
+      <button onclick="toggleAuthMode()" id="auth-toggle">S'inscrire</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMO MODAL (AGENCY CALL TO ACTION) -->
+<div id="promo-overlay" onclick="handlePromoClick(event)">
+  <div id="promo-box">
+    <button class="btn-close-auth" onclick="closePromoModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <div class="auth-eyebrow">Mode Démonstration</div>
+    <h2 class="promo-title">En cours de développement</h2>
+    <p class="promo-text">Ceci n'est qu'une démonstration / publicité.<br><br>Si le site vous a plu et que vous voulez qu'on vous crée un site web pro, veuillez nous écrire sur notre page Instagram ou par email.</p>
+    <a href="https://www.instagram.com/levelup.rb?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr" target="_blank" class="btn-insta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      Contacter Levelup.rb
+    </a>
+    <a href="mailto:contact@levelup-ecosystem.com" class="btn-email">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      contact@levelup-ecosystem.com
+    </a>
+  </div>
+</div>
+
+<!-- CHATBOT ASSISTANT -->
+<div id="chat-overlay" onclick="closeChat()"></div>
+<button id="chat-btn" onclick="toggleChat()">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <span id="chat-unread-badge" class="chat-unread-badge">1</span>
+</button>
+<div id="chat-panel">
+  <div class="chat-head">
+    <div class="chat-head-info">
+      <div class="chat-avatar">M</div>
+      <div>
+        <div class="chat-title">Le Majordome</div>
+        <div class="chat-status">En ligne</div>
+      </div>
+    </div>
+    <button class="btn-close-auth" onclick="closeChat()" style="position:static">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <div class="chat-chips">
+    <button class="chat-chip" onclick="sendChatMessage('Où êtes-vous situés ?')">📍 Nos adresses</button>
+    <button class="chat-chip" onclick="sendChatMessage('Proposez-vous la livraison ?')">🛵 Livraison</button>
+    <button class="chat-chip" onclick="sendChatMessage('Je veux réserver une table')">🍽️ Réserver</button>
+  </div>
+  <div class="chat-body" id="chat-body">
+    <div class="msg bot">Bienvenue chez Levmarco. Je suis Le Majordome, à votre entière disposition. Que puis-je faire pour agrémenter votre expérience aujourd'hui ?</div>
+  </div>
+  <div class="chat-foot">
+    <input type="text" id="chat-input" class="chat-input" placeholder="Posez votre question..." onkeypress="handleChatEnter(event)">
+    <button class="chat-send" onclick="sendChatMessage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ── FIREBASE INIT ── */
+// J'ai remis ici ton bloc de configuration exact pour que tes images marchent !
+const firebaseConfig = {
+    apiKey: "AIzaSyABrVTQRa9bzYtoRMStJAofJSH3C7TODtM",
+    authDomain: "levmarco-web.firebaseapp.com",
+    projectId: "levmarco-web",
+    storageBucket: "levmarco-web.firebasestorage.app",
+    messagingSenderId: "837486170138",
+    appId: "1:837486170138:web:a246a9ca9cd93dae8241a3",
+    measurementId: "G-KKTN3WLWWD"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+/* ── DATA ── */
+// Tableau de secours au cas où Firestore est vide ou les règles de sécurité bloquent
+let MENU=[
+  // --- IVOIRIENNE ---
+  {id:1,name:"Le Garba Royal",desc:"Attiéké frais, thon frit à la perfection, piment haché et oignons croquants.",price:12,cat:"Ivoirienne",tag:"Signature",img:"https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=800"},
+  {id:2,name:"Poulet Braisé & Alloco",desc:"Poulet mariné 24h aux épices secrètes, grillé au feu de bois, bananes plantains frites.",price:15,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&q=80&w=800"},
+  {id:101,name:"Choukouya de Mouton",desc:"Viande de mouton braisée et finement épicée, servie avec des oignons et de la moutarde.",price:18,cat:"Ivoirienne",tag:"Populaire",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:102,name:"Kédjénou de Poulet",desc:"Ragoût de poulet cuit à l'étouffée avec tomates, aubergines et piment.",price:16,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=800"},
+  {id:103,name:"Foutou Banane Sauce Graine",desc:"Pâte de banane plantain onctueuse, sauce aux noix de palme et viande de brousse.",price:20,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=800"},
+  {id:104,name:"Poisson Braisé Abidjanais",desc:"Daurade entière marinée et braisée au charbon, servie avec alloco et attiéké.",price:22,cat:"Ivoirienne",tag:"Chef",img:"https://images.unsplash.com/photo-1548943487-a2e4142f1d4f?auto=format&fit=crop&q=80&w=800"},
+  {id:105,name:"Placali Sauce Kôpê",desc:"Pâte de manioc fermenté, sauce gluante aux crabes et escargots.",price:17,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800"},
+  {id:106,name:"Sauce Arachide au Bœuf",desc:"Ragoût crémeux à la pâte d'arachide grillée, morceaux de bœuf tendres et riz blanc.",price:15,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800"},
+  {id:107,name:"Foutou Igname Sauce Claire",desc:"Pâte d'igname pilée, servie avec une soupe claire parfumée aux épices locales et poisson frais.",price:19,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=800"},
+  {id:108,name:"Soupe du Pêcheur",desc:"Bouillon épicé aux fruits de mer (crabe, crevettes, poisson), parfait pour les puristes.",price:24,cat:"Ivoirienne",tag:"Chef",img:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800"},
+  {id:109,name:"Placali Sauce Gombo",desc:"Le fameux gombo frais ivoirien, parsemé de viande fumée et champignons séchés.",price:16,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800"},
+  {id:110,name:"Tchep Ivoirien au Poisson",desc:"Riz rouge cuit dans un bouillon de poisson et légumes, la touche ivoirienne du classique.",price:18,cat:"Ivoirienne",tag:"Populaire",img:"https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&q=80&w=800"},
+  {id:111,name:"Pintade Braisée",desc:"Pintade locale rôtie lentement, chair ferme et goût prononcé, servie avec attiéké.",price:21,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:112,name:"Riz Gras à la Viande",desc:"Riz onctueux préparé avec des morceaux de bœuf, tomates et épices d'Abidjan.",price:14,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=800"},
+  {id:113,name:"Akpessi d'Igname",desc:"Purée d'igname à l'huile rouge, hareng fumé et sauce tomate épicée.",price:15,cat:"Ivoirienne",img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=800"},
+
+  // --- CONGOLAISE ---
+  {id:3,name:"Pondu & Poisson Fumé",desc:"Feuilles de manioc onctueuses mijotées longuement avec du poisson fumé d'exception.",price:16,cat:"Congolaise",tag:"Signature",img:"https://images.unsplash.com/photo-1548943487-a2e4142f1d4f?auto=format&fit=crop&q=80&w=800"},
+  {id:4,name:"Poulet Mayo de Kin",desc:"La star de Kinshasa : poulet rôti effiloché, mayonnaise maison et oignons fondants.",price:15,cat:"Congolaise",tag:"Populaire",img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=800"},
+  {id:201,name:"Ntaba (Mouton Grillé)",desc:"Côtelettes de mouton grillées à la kinoise, chikwangue et piment pili-pili.",price:18,cat:"Congolaise",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:202,name:"Liboké de Poisson",desc:"Poisson chat mariné et cuit à l'étouffée dans des feuilles de bananier.",price:20,cat:"Congolaise",tag:"Chef",img:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800"},
+  {id:203,name:"Fumbwa",desc:"Feuilles sauvages cuisinées à la pâte d'arachide et au poisson fumé, avec fufu.",price:17,cat:"Congolaise",img:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800"},
+  {id:204,name:"Makayabu",desc:"Poisson salé sauté aux oignons, tomates et poivrons, accompagné de lituma.",price:19,cat:"Congolaise",img:"https://images.unsplash.com/photo-1548943487-a2e4142f1d4f?auto=format&fit=crop&q=80&w=800"},
+  {id:205,name:"Kamundele",desc:"Brochettes de bœuf marinées aux épices congolaises, tendres et juteuses.",price:12,cat:"Congolaise",img:"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800"},
+  {id:206,name:"Madesu (Haricots)",desc:"Ragoût de haricots rouges fondants, préparé à la tomate avec de la viande fumée.",price:14,cat:"Congolaise",img:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800"},
+  {id:207,name:"Loso na Madesu",desc:"Riz blanc accompagné de nos fameux haricots rouges et poulet braisé.",price:17,cat:"Congolaise",tag:"Populaire",img:"https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&q=80&w=800"},
+  {id:208,name:"Poulet à la Moambe",desc:"Poulet mijoté dans une sauce riche à base de noix de palme, accompagné de bananes douces.",price:19,cat:"Congolaise",tag:"Signature",img:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=800"},
+  {id:209,name:"Mitoki (Manioc doux)",desc:"Feuilles de manioc préparées sans huile de palme, pour un goût végétal pur.",price:13,cat:"Congolaise",img:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800"},
+  {id:210,name:"Ngolo Braisé (Poisson Chat)",desc:"Le célèbre Ngolo du fleuve Congo, braisé et servi avec une sauce tomate pimentée.",price:23,cat:"Congolaise",img:"https://images.unsplash.com/photo-1548943487-a2e4142f1d4f?auto=format&fit=crop&q=80&w=800"},
+  {id:211,name:"Ntaba Epicé Extra",desc:"Notre Ntaba classique, mais avec une marinade enflammée pour les plus courageux.",price:19,cat:"Congolaise",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:212,name:"Capitaine Frit à la Congolaise",desc:"Gros morceau de Capitaine frit, croquant à l'extérieur, fondant à l'intérieur, avec fufu.",price:21,cat:"Congolaise",img:"https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=800"},
+
+  // --- STREET FOOD / FAST FOOD ---
+  {id:5,name:"Smash Burger Levmarco",desc:"Double steak bœuf charolais écrasé, cheddar affiné, sauce secrète, frites de patate douce.",price:14,cat:"Street Food",tag:"Signature",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:6,name:"French Tacos Signature",desc:"Viande hachée, poulet mariné, frites croustillantes et sauce fromagère maison gratinée.",price:13,cat:"Street Food",img:"https://images.unsplash.com/photo-1615719417325-4f0b2f155913?auto=format&fit=crop&q=80&w=800"},
+  {id:301,name:"Chawarma Poulet",desc:"Pain libanais, fines tranches de poulet mariné à la broche, sauce blanche.",price:10,cat:"Street Food",img:"https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&q=80&w=800"},
+  {id:302,name:"Burger Ivoirien",desc:"Steak de bœuf, rondelles d'alloco frites, sauce piment doux et salade croquante.",price:15,cat:"Street Food",tag:"Populaire",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:305,name:"Frites Cheddar Bacon",desc:"Grande portion de frites recouvertes de sauce fromagère et éclats de bœuf fumé.",price:8,cat:"Street Food",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:306,name:"Wings BBQ Fumées (x8)",desc:"Ailes de poulet marinées et fumées, enrobées de notre sauce barbecue maison.",price:12,cat:"Street Food",img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=800"},
+  {id:307,name:"Mega Cheese Burger",desc:"Triple steak, quadruple cheddar fondu, bacon de dinde crispy, sauce onctueuse.",price:17,cat:"Street Food",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:308,name:"Chicken Burger Croustillant",desc:"Filet de poulet pané maison ultra crispy, salade iceberg, mayo poivrée.",price:13,cat:"Street Food",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:309,name:"Wrap Bœuf Epicé",desc:"Galette de blé garnie de bœuf haché relevé, cheddar, poivrons et sauce algérienne.",price:11,cat:"Street Food",img:"https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&q=80&w=800"},
+  {id:310,name:"Tenders (12 pièces)",desc:"Le seau parfait : 12 filets de poulet tendres et panés avec 3 sauces au choix.",price:16,cat:"Street Food",tag:"A partager",img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=800"},
+  {id:311,name:"Frites Cheddar Jalapenos",desc:"Frites belges, sauce cheddar fondue et piments jalapenos piquants.",price:9,cat:"Street Food",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:312,name:"Hot Dog XXL New Yorkais",desc:"Maxi saucisse bœuf fumé, oignons frits, moutarde au miel et ketchup doux.",price:10,cat:"Street Food",img:"https://images.unsplash.com/photo-1615719417325-4f0b2f155913?auto=format&fit=crop&q=80&w=800"},
+  {id:313,name:"Pizza Afro-Fusion",desc:"Pâte fine, sauce tomate, poulet choukouya, poivrons grillés et mozzarella.",price:18,cat:"Street Food",tag:"Chef",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:314,name:"Panini Poulet Curry",desc:"Pain grillé croustillant rempli de poulet au curry, emmental fondu et crème.",price:9,cat:"Street Food",img:"https://images.unsplash.com/photo-1615719417325-4f0b2f155913?auto=format&fit=crop&q=80&w=800"},
+  {id:315,name:"Shawarma Mixte",desc:"Poulet et Bœuf marinés dans un seul pain libanais géant, frites incluses dedans.",price:12,cat:"Street Food",img:"https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&q=80&w=800"},
+  {id:316,name:"Burger Double Smash Truffe",desc:"Deux steaks écrasés, mayonnaise à la truffe noire, champignons sautés, gruyère.",price:19,cat:"Street Food",tag:"Signature",img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800"},
+  {id:317,name:"Tacos 3 Viandes Maxi",desc:"Viande hachée, poulet, merguez, blindé de frites et débordant de sauce fromagère.",price:16,cat:"Street Food",img:"https://images.unsplash.com/photo-1615719417325-4f0b2f155913?auto=format&fit=crop&q=80&w=800"},
+  {id:318,name:"Salade Caesar Poulet Pané",desc:"Pour la conscience : salade croquante, croutons, parmesan, poulet frit et sauce Caesar.",price:13,cat:"Street Food",img:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800"},
+  {id:319,name:"Box Apéro Mix 100%",desc:"6 Ailes BBQ, 6 Tenders, 6 Mozza Sticks, Frites XXL et assortiment de sauces.",price:25,cat:"Street Food",tag:"A partager",img:"https://images.unsplash.com/photo-1544025162-831e50821b02?auto=format&fit=crop&q=80&w=800"},
+  {id:320,name:"Sandwich Américain Steak",desc:"Baguette chaude garnie de 2 steaks hachés, frites intégrées et sauce au choix.",price:11,cat:"Street Food",img:"https://images.unsplash.com/photo-1615719417325-4f0b2f155913?auto=format&fit=crop&q=80&w=800"},
+
+  // --- BOISSONS ---
+  {id:7,name:"Nectar de Gingembre",desc:"Gingembre frais pressé à froid, touche de citron et miel sauvage.",price:5,cat:"Boissons",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:8,name:"Bissap Royal",desc:"Fleur d'hibiscus infusée à la menthe fraîche et sucre de canne.",price:5,cat:"Boissons",tag:"Signature",img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800"},
+  {id:401,name:"Jus de Baobab",desc:"Boisson onctueuse et acidulée à base de pulpe de fruit de baobab.",price:6,cat:"Boissons",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:402,name:"Gnamankoudji",desc:"Le classique ivoirien : ananas et force du gingembre.",price:5,cat:"Boissons",img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800"},
+  {id:403,name:"Jus de Passion Frais",desc:"Extrait de fruit de la passion pressé ce matin, une explosion tropicale.",price:6,cat:"Boissons",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:404,name:"Virgin Mojito Menthe",desc:"Citron vert, menthe fraîche, sucre de canne et eau pétillante.",price:7,cat:"Boissons",img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800"},
+  {id:405,name:"Piña Colada Sans Alcool",desc:"Crème de coco onctueuse et jus d'ananas mixés avec de la glace pilée.",price:8,cat:"Boissons",tag:"Populaire",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:406,name:"Jus de Corossol",desc:"Nectar doux et parfumé au corossol d'Afrique, bien glacé.",price:7,cat:"Boissons",img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800"},
+  {id:407,name:"Citronnade Maison Levmarco",desc:"Jus de citron pressé, sirop de canne et une pointe de fleur d'oranger.",price:5,cat:"Boissons",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:408,name:"Cocktail Levmarco (Signature)",desc:"Mix secret : passion, mangue, grenadine et limonade (sans alcool).",price:7,cat:"Boissons",tag:"Chef",img:"https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800"},
+  {id:409,name:"Thé Glacé Pêche",desc:"Thé noir infusé à froid, sirop de pêche naturel et glaçons.",price:5,cat:"Boissons",img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800"},
+  {id:410,name:"Milkshake Vanille Bourbon",desc:"Lait entier, glace vanille bourbon mixée et chantilly.",price:8,cat:"Boissons",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:411,name:"Milkshake Fraise Bonbon",desc:"Lait, glace fraise, coulis de fruits rouges et éclats de bonbons.",price:8,cat:"Boissons",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+
+  // --- DESSERTS ---
+  {id:501,name:"Dégé Ivoirien",desc:"Yaourt brassé sucré aux grains de mil, parfumé à la vanille et muscade.",price:7,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:502,name:"Salade Fruits Tropicaux",desc:"Mangue, ananas, papaye et passion frais coupés du jour.",price:6,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:503,name:"Beignets (Puff Puff)",desc:"Petites boules de pâte frites sucrées, servies avec sauce chocolat fondu.",price:6,cat:"Desserts",tag:"Populaire",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:504,name:"Fondant au Chocolat",desc:"Gâteau au chocolat cœur coulant chaud, servi avec une boule de glace vanille.",price:8,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:505,name:"Tiramisu Speculoos",desc:"Crème mascarpone légère, biscuit speculoos émietté et coulis caramel.",price:9,cat:"Desserts",tag:"Signature",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:506,name:"Cheesecake Mangue Passion",desc:"Base sablée, fromage frais onctueux et miroir de mangue/passion au sommet.",price:9,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:507,name:"Crêpes Africaines",desc:"Crêpes moelleuses roulées avec de la pâte à tartiner et éclats d'arachides grillées.",price:7,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:508,name:"Glace Vanille Noix de Pécan",desc:"Trois boules de glace artisanale, cerneaux de pécan caramélisés.",price:6,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:509,name:"Fondant Caramel Beurre Salé",desc:"Le classique revisité avec un cœur coulant au caramel beurre salé tiède.",price:8,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"},
+  {id:510,name:"Mousse au Chocolat Intense",desc:"Mousse aérienne au chocolat noir 70%, saupoudrée de grué de cacao.",price:7,cat:"Desserts",img:"https://images.unsplash.com/photo-1563805042-7684c8e9e5cb?auto=format&fit=crop&q=80&w=800"}
+];
+const CATS=["Tout","Ivoirienne","Congolaise","Street Food","Boissons","Desserts"];
+const TAG_LABELS={Signature:"✦ Signature",Chef:"✦ Sélection Chef",Populaire:"✦ Populaire"};
+
+let cart=[], activeFilter="Tout", authMode="login";
+let extraAIContext = ""; // Le cerveau supplémentaire depuis Firebase
+let chatHistory = []; // La mémoire de l'IA
+let unreadCount = 1; // 1 pour le message de bienvenue initial
+let isBotTyping = false; // Guardrail to prevent sequence errors
+let demoMsgCount = parseInt(localStorage.getItem('levmarco_demo_msg_count') || '0');
+
+/* ── FETCH MENU FROM FIREBASE ── */
+async function loadMenuFromFirebase() {
+  try {
+    const snapshot = await db.collection('menuItems').get();
+    if (!snapshot.empty) {
+      MENU = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderFilters();
+      renderMenu();
+    }
+  } catch (error) {
+    console.error("Erreur Firestore: Utilisez-vous les bonnes règles de sécurité ?", error);
+  }
+}
+
+/* ── FETCH AI CONTEXT FROM FIREBASE ── */
+async function loadAIContextFromFirebase() {
+  try {
+    const docCtx = await db.collection('settings').doc('aiContext').get();
+    if (docCtx.exists) {
+      extraAIContext = docCtx.data().text || "";
+    }
+  } catch (error) {
+    console.log("Erreur de chargement du cerveau IA (normal si non configuré)");
+  }
+}
+
+/* ── NAV ── */
+const mainNav=document.getElementById('main-nav');
+window.addEventListener('scroll',()=>mainNav.classList.toggle('scrolled',window.scrollY>60),{passive:true});
+
+/* ── REVEAL ── */
+function initReveal(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});
+  },{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+}
+
+/* ── MARQUEE ── */
+(function(){
+  const items=["Ivoirienne","Congolaise","Street Food","Boissons","Desserts","Réservations","Abidjan","Kinshasa"];
+  let h='';
+  for(let g=0;g<4;g++) items.forEach(t=>{h+=`<span class="marquee-item">${t}</span><span class="marquee-dot">✦</span>`;});
+  document.getElementById('marqueeTrack').innerHTML=h;
+})();
+
+/* ── MENU ── */
+function renderFilters(){
+  document.getElementById('filters').innerHTML=CATS.map(c=>
+    `<button class="filter-btn${c===activeFilter?' active':''}" onclick="setFilter('${c}')">${c}</button>`
+  ).join('');
+}
+function setFilter(cat){activeFilter=cat;renderFilters();renderMenu();}
+function renderMenu(){
+  const filtered=MENU.filter(i=>activeFilter==='Tout'||i.cat===activeFilter);
+  document.getElementById('menuCount').textContent=`${filtered.length} plat${filtered.length>1?'s':''} — ${activeFilter}`;
+  document.getElementById('menuGrid').innerHTML=filtered.map((item,idx)=>`
+    <article class="menu-card reveal" style="transition-delay:${(idx%6)*.07}s">
+      <div class="card-img-wrap">
+        <img src="${item.img}" alt="${item.name}" loading="lazy" decoding="async">
+        <div class="card-overlay"></div>
+        ${item.tag?`<div class="card-tag"><span class="tag-badge">${TAG_LABELS[item.tag]||item.tag}</span></div>`:''}
+        <div class="card-cta">
+          <button class="card-add-btn" id="add-btn-${item.id}" onclick="addToCart(${item.id})">Ajouter au panier</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-row">
+          <h3 class="card-name">${item.name}</h3>
+          <span class="card-price">${item.price}<sup>$</sup></span>
+        </div>
+        <p class="card-desc">${item.desc}</p>
+      </div>
+    </article>
+  `).join('');
+  setTimeout(initReveal,50);
+}
+
+/* ── CART ── */
+function addToCart(id){
+  const item=MENU.find(i=>i.id===id); if(!item)return;
+  const ex=cart.find(c=>c.id===id);
+  if(ex)ex.qty++; else cart.push({...item,qty:1});
+  updateCartUI(); showToast(item.name);
+  const btn=document.getElementById('add-btn-'+id);
+  if(btn){btn.classList.add('added');btn.textContent='✓ Ajouté';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Ajouter au panier';},1600);}
+}
+function updateQty(id,delta){
+  const i=cart.findIndex(c=>c.id===id); if(i<0)return;
+  cart[i].qty+=delta;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  updateCartUI(); renderCartItems();
+}
+function clearCart(){cart=[];updateCartUI();renderCartItems();}
+function updateCartUI(){
+  const count=cart.reduce((s,c)=>s+c.qty,0);
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const badge=document.getElementById('cart-badge');
+  badge.style.display=count>0?'flex':'none'; badge.textContent=count;
+  document.getElementById('cart-label').textContent=count>0?total.toFixed(0)+' $':'Panier';
+  document.getElementById('btn-clear').style.display=cart.length>0?'block':'none';
+  const tva=total*.1, sub=total-tva;
+  document.getElementById('subtotal-val').textContent=sub.toFixed(2)+' $';
+  document.getElementById('tva-val').textContent=tva.toFixed(2)+' $';
+  document.getElementById('total-val').textContent=total.toFixed(2);
+  document.getElementById('cart-foot').style.display=cart.length>0?'block':'none';
+  document.getElementById('btn-checkout').textContent=`Commander · ${count} article${count>1?'s':''}`;
+}
+function renderCartItems(){
+  const el=document.getElementById('cart-items');
+  if(!cart.length){
+    el.innerHTML=`<div class="cart-empty">
+      <div class="cart-empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A3D30" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+      <p>Table encore vide</p>
+      <span onclick="closeCart()">Voir la carte →</span>
+    </div>`;
+    return;
+  }
+  el.innerHTML=cart.map((item,idx)=>`
+    <div class="cart-item" style="animation:itemEnter .4s ${idx*.06}s cubic-bezier(.16,1,.3,1) both">
+      <img class="cart-item-img" src="${item.img}" alt="${item.name}">
+      <div class="cart-item-body">
+        <div>
+          <div class="cart-item-top">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">${(item.price*item.qty).toFixed(0)}$</div>
+          </div>
+          <div class="cart-item-cat">${item.cat}</div>
+        </div>
+        <div class="cart-item-foot">
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="updateQty(${item.id},-1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="updateQty(${item.id},1)">+</button>
+          </div>
+          <button class="btn-del" onclick="updateQty(${item.id},${-item.qty})">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function openCart(){document.getElementById('cart-overlay').classList.add('open');document.getElementById('cart-panel').classList.add('open');renderCartItems();}
+function closeCart(){document.getElementById('cart-overlay').classList.remove('open');document.getElementById('cart-panel').classList.remove('open');}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(name){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-name').textContent=name;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ── AUTH ── */
+function openAuth(){document.getElementById('auth-overlay').classList.add('open');}
+function closeAuth(){document.getElementById('auth-overlay').classList.remove('open');}
+function handleAuthClick(e){if(e.target===document.getElementById('auth-overlay'))closeAuth();}
+function toggleAuthMode(){
+  authMode=authMode==='login'?'register':'login';
+  const isReg=authMode==='register';
+  document.getElementById('auth-title').textContent=isReg?'Inscription':'Connexion';
+  document.getElementById('btn-auth').textContent=isReg?'Créer un Compte':'Se Connecter';
+  document.getElementById('auth-toggle').textContent=isReg?'Se connecter':"S'inscrire";
+  document.getElementById('auth-name-field').style.display=isReg?'block':'none';
+  document.getElementById('auth-switch-text').textContent=isReg?'Déjà membre ? ':'Pas encore de compte ? ';
+}
+
+/* ── PROMO MODAL ── */
+function openPromoModal(){
+  // Ferme les autres fenêtres si elles sont ouvertes
+  document.getElementById('cart-overlay').classList.remove('open');
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('auth-overlay').classList.remove('open');
+  closeChat();
+  // Ouvre la fenêtre de promotion
+  document.getElementById('promo-overlay').classList.add('open');
+}
+function closePromoModal(){document.getElementById('promo-overlay').classList.remove('open');}
+function handlePromoClick(e){if(e.target===document.getElementById('promo-overlay'))closePromoModal();}
+
+/* ── GEMINI AI CHATBOT (LE MAJORDOME) ── */
+function updateChatBadge() {
+  const badge = document.getElementById('chat-unread-badge');
+  if (unreadCount > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleChat() {
+  const panel = document.getElementById('chat-panel');
+  panel.classList.toggle('open');
+  document.getElementById('chat-overlay').classList.toggle('open');
+  
+  if (panel.classList.contains('open')) {
+    unreadCount = 0;
+    updateChatBadge();
+
+    // BLOQUER L'UI SI LA LIMITE DE DÉMO EST DÉJÀ ATTEINTE
+    if (demoMsgCount >= 5) {
+      document.getElementById('chat-input').disabled = true;
+      document.getElementById('chat-input').placeholder = "Limite de démo atteinte.";
+      document.querySelector('.chat-send').disabled = true;
+      document.querySelector('.chat-send').style.opacity = '0.5';
+    }
+  }
+}
+
+function closeChat() {
+  document.getElementById('chat-panel').classList.remove('open');
+  document.getElementById('chat-overlay').classList.remove('open');
+}
+
+function handleChatEnter(e) {
+  if (e.key === 'Enter') sendChatMessage();
+}
+
+async function sendChatMessage(quickText) {
+  if (isBotTyping) return; // Empêche d'envoyer un message si le bot tape déjà
+  
+  const chatBody = document.getElementById('chat-body');
+
+  // VÉRIFICATION DE LA LIMITE DE DÉMO (5 MESSAGES MAX)
+  if (demoMsgCount >= 5) {
+    const botMsg = document.createElement('div');
+    botMsg.className = 'msg bot';
+    botMsg.innerHTML = '<strong style="color:var(--gold)">Démonstration terminée</strong><br>Vous avez atteint la limite de 5 questions pour cette démo.<br><br><a href="mailto:contact@levelup-ecosystem.com" style="color:var(--gold);text-decoration:underline;">Contactez LevelUp Ecosystem</a> pour obtenir la version complète.';
+    chatBody.appendChild(botMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    
+    // Désactiver les contrôles de chat
+    document.getElementById('chat-input').disabled = true;
+    document.getElementById('chat-input').placeholder = "Limite de démo atteinte.";
+    document.querySelector('.chat-send').disabled = true;
+    document.querySelector('.chat-send').style.opacity = '0.5';
+    return;
+  }
+
+  const input = document.getElementById('chat-input');
+  // Accepte le texte tapé ou le texte cliqué depuis les puces (chips)
+  const text = typeof quickText === 'string' ? quickText : input.value.trim();
+  if (!text) return;
+
+  // INCRÉMENTER LE COMPTEUR ET SAUVEGARDER EN LOCAL
+  demoMsgCount++;
+  localStorage.setItem('levmarco_demo_msg_count', demoMsgCount.toString());
+
+  isBotTyping = true;
+  
+  // Affiche le message de l'utilisateur
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = text;
+  chatBody.appendChild(userMsg);
+  input.value = '';
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Ajoute à la mémoire de l'IA
+  chatHistory.push({ role: "user", parts: [{ text: text }] });
+
+  // Animation de chargement (Les 3 petits points)
+  const botMsg = document.createElement('div');
+  botMsg.className = 'msg bot typing';
+  botMsg.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  chatBody.appendChild(botMsg);
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  try {
+    const apiKey = ""; // L'environnement injecte automatiquement la clé ici
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    
+    // 1. On donne tout le menu au Majordome dynamiquement
+    const menuString = MENU.map(item => `- ${item.name} (${item.price}$): ${item.desc}`).join('\n');
+    
+    // 2. Le Super-Cerveau ultra cadré
+    const systemPrompt = `Tu es "Le Majordome", l'assistant virtuel IA exclusif et distingué du restaurant gastronomique "Levmarco" (présent à Abidjan et Kinshasa). 
+    RÈGLES ABSOLUES ET STRICTES :
+    1. Reste 100% concentré sur le restaurant. Ne réponds À AUCUNE question hors sujet. Refuse poliment si on s'éloigne du sujet.
+    2. Sois toujours professionnel, élégant et concis (réponds en 1 à 3 phrases maximum).
+    3. Si on te demande qui t'a créé ou qui a fait ce site : réponds fièrement que c'est l'agence "LevelUp" et "Marco". MAIS NE DONNE JAMAIS cette information si on ne te l'a pas explicitement demandée.
+    4. Aide le client avec la carte, les réservations et les questions fréquentes.
+    
+    Adresses : Abidjan (Rue des Jardins, Cocody), Kinshasa (Boulevard du 30 Juin, Gombe).
+    
+    Voici notre menu actuel avec les prix :
+    ${menuString}
+
+    Instructions et contexte supplémentaires de la direction :
+    ${extraAIContext}`;
+
+    const payload = {
+      contents: chatHistory, // On envoie TOUT l'historique !
+      systemInstruction: { parts: [{ text: systemPrompt }] }
+    };
+
+    // Logique de relance automatique (Backoff) pour éviter les erreurs réseau passageres
+    const delays = [1000, 2000, 4000, 8000, 16000];
+    let response;
+    let success = false;
+
+    for (let i = 0; i <= 5; i++) {
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+          success = true;
+          break;
+        } else {
+          const errText = await response.text();
+          console.error("API Error details:", errText);
+        }
+        if (i === 5) throw new Error('API Error after retries');
+      } catch (e) {
+        if (i === 5) throw e;
+        await new Promise(r => setTimeout(r, delays[i]));
+      }
+    }
+
+    if (!success) throw new Error('API Error');
+
+    const data = await response.json();
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Désolé, je n'ai pas compris.";
+    
+    // Ajoute la réponse à la mémoire
+    chatHistory.push({ role: "model", parts: [{ text: replyText }] });
+
+    // Effet "Streaming" (Machine à écrire pro)
+    botMsg.className = 'msg bot';
+    botMsg.innerHTML = '';
+    
+    let i = 0;
+    function typeWriter() {
+      if (i < replyText.length) {
+        botMsg.textContent += replyText.charAt(i);
+        i++;
+        chatBody.scrollTop = chatBody.scrollHeight;
+        setTimeout(typeWriter, 15); // Vitesse de frappe
+      } else {
+        isBotTyping = false; // Le bot a fini de taper
+        // Si le client a fermé la fenêtre pendant la réponse, on incrémente le badge rouge
+        if (!document.getElementById('chat-panel').classList.contains('open')) {
+          unreadCount++;
+          updateChatBadge();
+        }
+      }
+    }
+    typeWriter();
+
+  } catch (error) {
+    botMsg.className = 'msg bot';
+    botMsg.textContent = "Veuillez m'excuser, je suis momentanément indisponible.";
+    console.error("Chat error:", error);
+    isBotTyping = false;
+    // En cas d'erreur de l'API, on retire le dernier message de l'historique pour ne pas casser la suite de la conversation
+    chatHistory.pop();
+  }
+}
+
+/* ── MISC ── */
+function scrollToTop(e){e.preventDefault();window.scrollTo({top:0,behavior:'smooth'});}
+document.getElementById('yr').textContent=new Date().getFullYear();
+
+/* ── INIT ── */
+renderFilters();
+renderMenu();
+loadMenuFromFirebase(); // Récupère le menu dynamique
+loadAIContextFromFirebase(); // Récupère le cerveau IA
+initReveal();
+updateCartUI();
+</script>
+
+</body>
+</html>
