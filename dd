@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,interactive-widget=resizes-content">
+<title>OPPA — Connect & Share</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#08080D;--bg2:#0D0D1A;
+--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.08);--surface3:rgba(255,255,255,.12);
+--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+--accent:#7C3AED;--accent2:#9F67FA;--accent-light:#C4B5FD;--accent-glow:rgba(124,58,237,.3);
+--text:#F0EEFF;--text2:#8B8BA7;--text3:#3D3D55;
+--green:#34D399;--red:#F87171;--pink:#EC4899;--gold:#F59E0B;
+--nav-h:68px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;width:100%;background:#000;font-family:'Outfit',sans-serif;color:var(--text);overflow:hidden;position:fixed;overscroll-behavior:none}
+input,textarea{user-select:text}
+#app{width:100%;height:100dvh;background:var(--bg);position:relative;overflow:hidden}
+
+/* SCREENS */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;transform:translateY(8px)}
+.screen>*{width:100%;max-width:600px}
+.screen.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:var(--nav-h)}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* NAV */
+#bottom-nav{position:absolute;bottom:0;left:0;right:0;z-index:200;height:var(--nav-h);background:rgba(8,8,13,.92);backdrop-filter:blur(32px);border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-around;padding:0 4px env(safe-area-inset-bottom)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 14px;cursor:pointer;transition:all .2s;position:relative;flex:1}
+.nav-item svg{opacity:.4;transition:all .25s}
+.nav-item.active svg{opacity:1;filter:drop-shadow(0 0 8px var(--accent2))}
+.nav-label{font-size:10px;font-weight:600;color:var(--text2);opacity:.4;transition:all .25s;letter-spacing:.3px}
+.nav-item.active .nav-label{color:var(--accent-light);opacity:1}
+.nav-badge{position:absolute;top:5px;right:8px;width:17px;height:17px;background:#EF4444;border-radius:50%;font-size:10px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+.nav-post{width:50px;height:50px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 6px 24px var(--accent-glow);transition:all .2s}
+.nav-post:active{transform:scale(.9)}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;padding:15px;color:#fff;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px;box-shadow:0 6px 24px var(--accent-glow);width:100%}
+.btn-primary:active{transform:scale(.97)}
+.btn-ghost{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid var(--border2);border-radius:14px;padding:14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;width:100%}
+.btn-ghost:active{transform:scale(.97)}
+.icon-btn{width:38px;height:38px;background:var(--surface2);border-radius:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .15s;border:1px solid var(--border);flex-shrink:0}
+.icon-btn:active{transform:scale(.88)}
+.back-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:12px;transition:background .15s;flex-shrink:0}
+.back-btn:active{background:var(--surface2)}
+.divider{display:flex;align-items:center;gap:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{color:var(--text3);font-size:12px;font-weight:600}
+.inp{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.inp::placeholder{color:var(--text3)}
+
+/* AUTH */
+#screen-auth{justify-content:center;align-items:center;padding:0}
+#screen-auth>*{max-width:100%}
+.auth-hero{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px 20px;background:radial-gradient(ellipse 120% 80% at 50% 0%,rgba(124,58,237,.25) 0%,transparent 60%)}
+.auth-logo-text{font-size:80px;font-weight:900;letter-spacing:-5px;line-height:1;background:linear-gradient(135deg,#fff 0%,#C4B5FD 40%,#7C3AED 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+.auth-tagline{color:var(--text2);font-size:13px;font-weight:500;margin-top:10px;letter-spacing:1.5px;text-transform:uppercase;text-align:center}
+.auth-form-container{width:100%;max-width:440px;padding:20px 28px max(50px,env(safe-area-inset-bottom));margin:0 auto;display:flex;flex-direction:column;flex:1;justify-content:center}
+.auth-card{background:rgba(13,13,26,.8);border:1px solid var(--border2);border-radius:28px;padding:32px 26px;backdrop-filter:blur(40px);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.key-toggle-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.06);border:1.5px solid var(--border2);border-radius:14px;padding:15px;color:var(--text2);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.key-toggle-btn:active{transform:scale(.97)}
+.key-field-wrap{display:none;flex-direction:column;gap:10px}
+.key-field-wrap.visible{display:flex}
+
+/* HEADER */
+.app-header{padding:max(18px,env(safe-area-inset-top)) 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.app-logo{font-size:28px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,#fff 0%,#A78BFA 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-actions{display:flex;gap:10px;align-items:center}
+
+/* STORIES */
+.stories-wrap{padding:4px 0 14px;flex-shrink:0}
+.stories-scroll{display:flex;gap:12px;padding:4px 18px;overflow-x:auto;scrollbar-width:none}
+.stories-scroll::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0}
+.story-ring{width:66px;height:66px;border-radius:22px;padding:2.5px;background:linear-gradient(135deg,#7C3AED,#EC4899,#F59E0B);transition:transform .18s;flex-shrink:0}
+.story-ring.seen{background:var(--surface3)}
+.story-ring:active{transform:scale(.91)}
+.story-inner{width:100%;height:100%;border-radius:19.5px;overflow:hidden;border:2.5px solid var(--bg)}
+.story-inner img{width:100%;height:100%;object-fit:cover}
+.story-name{font-size:11px;color:var(--text2);font-weight:500;max-width:66px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-add-btn{width:66px;height:66px;border-radius:22px;background:var(--surface);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;position:relative}
+.story-add-btn:active{transform:scale(.91)}
+.limit-dot{position:absolute;top:-3px;right:-3px;background:var(--gold);width:13px;height:13px;border-radius:50%;border:2px solid var(--bg);font-size:8px;color:#000;display:flex;align-items:center;justify-content:center;font-weight:800}
+
+/* POSTS */
+.post{margin-bottom:2px;border-bottom:1px solid var(--border);padding-bottom:14px}
+.post-header{display:flex;align-items:center;padding:12px 16px 10px;gap:10px}
+.post-av{width:42px;height:42px;border-radius:15px;object-fit:cover;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0}
+.post-meta{flex:1;min-width:0}
+.post-user{font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+.post-time{font-size:12px;color:var(--text2)}
+.post-more{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:10px;transition:background .15s;flex-shrink:0}
+.post-more:active{background:var(--surface2)}
+.post-img{width:100%;display:block;cursor:pointer;position:relative}
+.post-img img{width:100%;display:block;object-fit:cover}
+.post-img-sq img{aspect-ratio:1}
+.post-img-land img{aspect-ratio:4/3}
+.post-text{padding:12px 16px 8px;font-size:16px;line-height:1.55;color:var(--text)}
+.post-actions{display:flex;align-items:center;gap:4px;padding:10px 12px 0}
+.post-act{display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:12px;transition:all .15s;color:var(--text2);font-size:14px;font-weight:600}
+.post-act:active{background:var(--surface2)}
+.post-act.liked{color:var(--red)}
+.post-act .cnt{font-size:13px;font-weight:700}
+.post-caption{padding:6px 16px 0;font-size:14px;line-height:1.4}
+.post-caption b{font-weight:700;margin-right:6px;cursor:pointer}
+.type-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.type-badge.moment{background:rgba(236,72,153,.15);color:var(--pink)}
+@keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.5)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+.heart-pop{animation:heartPop .32s ease}
+
+/* STORY VIEWER */
+.story-viewer{position:absolute;inset:0;background:#000;z-index:800;display:none;flex-direction:column;align-items:center}
+.story-viewer.open{display:flex}
+.sv-progress{display:flex;gap:4px;padding:max(52px,env(safe-area-inset-top)) 14px 10px;position:absolute;top:0;left:0;right:0;z-index:10}
+.sv-prog{flex:1;height:2.5px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden}
+.sv-prog-fill{height:100%;background:#fff;width:0%;border-radius:2px}
+.sv-header{position:absolute;top:max(62px,calc(env(safe-area-inset-top)+42px));left:14px;right:14px;display:flex;align-items:center;gap:10px;z-index:10}
+.sv-av{width:38px;height:38px;border-radius:13px;object-fit:cover;border:2px solid rgba(255,255,255,.5);cursor:pointer}
+.sv-name{font-size:14px;font-weight:700;color:#fff}
+.sv-time{font-size:12px;color:rgba(255,255,255,.6)}
+.sv-close{margin-left:auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(0,0,0,.3);border-radius:50%}
+.sv-img{width:100%;height:100%;object-fit:cover}
+.sv-reply{position:absolute;bottom:max(32px,env(safe-area-inset-bottom));left:14px;right:14px;z-index:10;display:flex;align-items:center;gap:10px}
+.sv-reply-inp{flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:24px;padding:12px 18px;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;outline:none;backdrop-filter:blur(10px)}
+.sv-reply-inp::placeholder{color:rgba(255,255,255,.6)}
+
+/* SEARCH */
+.search-header{padding:max(18px,env(safe-area-inset-top)) 18px 14px;flex-shrink:0}
+.search-title{font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:14px}
+.search-bar{position:relative}
+.search-bar svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none}
+.search-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:13px 16px 13px 44px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search-inp::placeholder{color:var(--text3)}
+.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.section-label{font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;padding:16px 18px 8px}
+.user-row{display:flex;align-items:center;padding:12px 18px;gap:12px;cursor:pointer;transition:background .15s}
+.user-row:active{background:var(--surface)}
+.u-av{width:52px;height:52px;border-radius:19px;object-fit:cover;border:1.5px solid var(--border2);flex-shrink:0}
+.u-info{flex:1;min-width:0}
+.u-name{font-size:15px;font-weight:700}
+.u-handle{font-size:13px;color:var(--text2)}
+.u-followers{font-size:12px;color:var(--text3);margin-top:2px}
+.follow-btn{background:var(--accent);border:none;border-radius:12px;padding:9px 18px;color:#fff;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0}
+.follow-btn.following{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.follow-btn:active{transform:scale(.93)}
+.explore-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.explore-cell{aspect-ratio:1;overflow:hidden;cursor:pointer}
+.explore-cell img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.explore-cell:active img{transform:scale(1.08)}
+
+/* MESSAGES */
+.msg-header{padding:max(18px,env(safe-area-inset-top)) 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.msg-title{font-size:26px;font-weight:900;letter-spacing:-1px}
+.msg-search-wrap{padding:0 18px 10px;flex-shrink:0}
+.msg-search-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:11px 16px 11px 40px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none}
+.msg-search-inp::placeholder{color:var(--text3)}
+.msg-search-rel{position:relative}
+.msg-search-rel svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none}
+.msg-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 18px}
+.msg-tab{flex:1;padding:11px 6px;text-align:center;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s}
+.msg-tab.active{color:var(--accent-light);border-bottom-color:var(--accent)}
+.conv{display:flex;align-items:center;padding:13px 18px;gap:13px;cursor:pointer;transition:background .15s;position:relative}
+.conv:active{background:var(--surface)}
+.conv-av-wrap{position:relative;flex-shrink:0}
+.conv-av{width:54px;height:54px;border-radius:19px;object-fit:cover;border:1.5px solid var(--border2)}
+.conv-grp-av{width:54px;height:54px;border-radius:19px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0}
+.online-dot{width:13px;height:13px;background:var(--green);border-radius:50%;border:2.5px solid var(--bg);position:absolute;bottom:0;right:0}
+.conv-info{flex:1;min-width:0}
+.conv-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px}
+.conv-preview{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.conv-preview.unread{color:var(--text);font-weight:600}
+.conv-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.conv-time{font-size:12px;color:var(--text3)}
+.unread-badge{width:20px;height:20px;background:var(--accent);border-radius:50%;font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center}
+.conv-opt-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background .15s;cursor:pointer;flex-shrink:0;color:var(--text3)}
+.conv-opt-btn:active{background:var(--surface3)}
+
+/* CHAT */
+#screen-chat{background:var(--bg)}
+.chat-header{display:flex;align-items:center;padding:max(14px,env(safe-area-inset-top)) 14px 12px;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-av{width:42px;height:42px;border-radius:15px;object-fit:cover;border:2px solid var(--accent);cursor:pointer;flex-shrink:0}
+.chat-grp-av{width:42px;height:42px;border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;cursor:pointer}
+.chat-meta{flex:1;min-width:0;cursor:pointer}
+.chat-name-h{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-status{font-size:12px;font-weight:500}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.chat-msgs::-webkit-scrollbar{display:none}
+.chat-date{text-align:center;font-size:12px;color:var(--text3);font-weight:600;padding:4px 0 6px}
+.bubble-row{display:flex;flex-direction:column;max-width:76%}
+.bubble-row.sent{align-self:flex-end;align-items:flex-end}
+.bubble-row.recv{align-self:flex-start;align-items:flex-start}
+.bubble-row.grp-recv{max-width:82%}
+.grp-sender-info{display:flex;align-items:center;gap:7px;margin-bottom:4px;cursor:pointer}
+.grp-sender-av{width:26px;height:26px;border-radius:9px;object-fit:cover;flex-shrink:0}
+.grp-sender-name{font-size:12px;color:var(--text2);font-weight:600}
+.bubble{padding:11px 16px;border-radius:20px;font-size:15px;line-height:1.42;word-break:break-word}
+.bubble-row.sent .bubble{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-bottom-right-radius:5px}
+.bubble-row.recv .bubble,.bubble-row.grp-recv .bubble{background:var(--surface2);color:var(--text);border-bottom-left-radius:5px}
+.bubble-time{font-size:11px;color:var(--text3);padding:3px 4px 0}
+.voice-bubble{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:20px;min-width:170px;cursor:pointer}
+.bubble-row.sent .voice-bubble{background:linear-gradient(135deg,var(--accent),var(--accent2));border-bottom-right-radius:5px}
+.bubble-row.recv .voice-bubble,.bubble-row.grp-recv .voice-bubble{background:var(--surface2);border-bottom-left-radius:5px}
+.vplay{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vwave{flex:1;height:30px;display:flex;align-items:center;gap:2px}
+.vbar{border-radius:2px;background:rgba(255,255,255,.45);width:3px}
+@keyframes wv{0%,100%{height:3px}50%{height:22px}}
+.vdur{font-size:12px;color:rgba(255,255,255,.7);font-weight:600}
+.msg-status{font-size:11px;font-weight:600;color:var(--text3);margin-top:2px}
+.msg-status.seen{color:var(--accent-light)}
+.chat-input-row{display:flex;align-items:center;gap:10px;padding:10px 14px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0;background:rgba(8,8,13,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;z-index:10}
+.c-input-wrapper{flex:1;display:flex;align-items:center;background:var(--surface2);border:1.5px solid var(--border);border-radius:26px;padding:4px;transition:all .25s ease}
+.c-input-wrapper:focus-within{border-color:var(--accent);background:rgba(124,58,237,.05);box-shadow:0 0 0 3px var(--accent-glow)}
+.rec-bar{display:none;align-items:center;gap:12px;padding:12px 14px;background:rgba(239,68,68,.08);border-top:1px solid rgba(239,68,68,.15);flex-shrink:0}
+.rec-bar.on{display:flex}
+.rec-dot{width:10px;height:10px;background:#EF4444;border-radius:50%;animation:rp 1s ease-in-out infinite}
+@keyframes rp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.75)}}
+.rec-txt{font-size:14px;color:#EF4444;font-weight:600;flex:1}
+.rec-timer{font-size:14px;color:#EF4444;font-weight:700;font-variant-numeric:tabular-nums}
+.rec-cancel{font-size:14px;color:var(--text2);cursor:pointer;padding:4px 8px}
+.c-inp{flex:1;background:transparent;border:none;padding:8px 10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none;min-width:0}
+.c-inp::placeholder{color:var(--text3)}
+.c-act{width:36px;height:36px;border-radius:18px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;color:var(--text2)}
+.c-act:active{transform:scale(.85);background:var(--surface3);color:var(--text)}
+.c-send{width:44px;height:44px;border-radius:22px;flex-shrink:0;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px var(--accent-glow);color:#fff}
+.c-send:active{transform:scale(.85);box-shadow:0 2px 8px var(--accent-glow)}
+.c-send svg{transform:translateX(-1px) translateY(1px)}
+.typing-row{display:flex;align-items:flex-end;gap:8px;align-self:flex-start;margin-top:2px}
+.typing-bubble{background:var(--surface2);border-radius:20px;border-bottom-left-radius:5px;padding:14px 18px;display:flex;align-items:center;gap:5px}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:tdot 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
+
+/* PROFILE */
+.prof-header{padding:max(20px,env(safe-area-inset-top)) 18px 0;flex-shrink:0}
+.prof-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.prof-username{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.prof-av-section{display:flex;align-items:center;gap:28px;margin-bottom:14px}
+.prof-av{width:86px;height:86px;border-radius:28px;object-fit:cover;border:3px solid var(--accent);box-shadow:0 0 0 1px var(--accent-glow),0 8px 24px rgba(124,58,237,.35);cursor:pointer}
+.prof-stats{display:flex;gap:20px}
+.stat{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.stat-n{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.stat-l{font-size:12px;color:var(--text2);font-weight:500}
+.prof-bio{font-size:14px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.daily-pills{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.daily-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--border)}
+.daily-pill.ok{background:rgba(124,58,237,.1);color:var(--accent-light);border-color:rgba(124,58,237,.2)}
+.daily-pill.full{background:rgba(239,68,68,.08);color:var(--red);border-color:rgba(239,68,68,.2)}
+.prof-btns{display:flex;gap:10px;margin-bottom:18px}
+.btn-edit-p{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:13px;padding:10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.btn-edit-p:active{transform:scale(.97)}
+.btn-share-p{width:44px;background:var(--surface2);border:1px solid var(--border2);border-radius:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.btn-share-p:active{transform:scale(.93)}
+.prof-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.prof-tab{flex:1;padding:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s}
+.prof-tab svg{opacity:.3;transition:opacity .2s}
+.prof-tab.active{border-bottom-color:var(--accent)}
+.prof-tab.active svg{opacity:1}
+.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.prof-cell{aspect-ratio:1;overflow:hidden;cursor:pointer;position:relative}
+.prof-cell img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.prof-cell:active img{transform:scale(1.07)}
+.prof-cell .reel-icon{position:absolute;top:7px;right:7px;opacity:.9}
+
+/* POST CREATOR */
+.post-overlay{position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.post-overlay.open{display:flex}
+.post-sheet{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:28px 28px 0 0;width:100%;max-width:600px;padding:18px 18px max(28px,env(safe-area-inset-bottom));animation:sUp .34s cubic-bezier(.16,1,.3,1)}
+.sheet-handle{width:40px;height:4px;background:var(--surface3);border-radius:2px;margin:0 auto 18px}
+.post-sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.post-sheet-title{font-size:18px;font-weight:800}
+.post-cancel{font-size:14px;color:var(--text2);cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .15s}
+.post-cancel:active{background:var(--surface2)}
+.ptype-tabs{display:flex;gap:6px;margin-bottom:14px}
+.ptype-tab{flex:1;padding:9px;text-align:center;border-radius:13px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .2s;background:var(--surface);border:1px solid var(--border)}
+.ptype-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.ptype-tab.blocked{opacity:.35;cursor:not-allowed}
+.post-limit-note{font-size:12px;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:12px;display:none}
+.post-user-r{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.post-my-av{width:42px;height:42px;border-radius:15px;object-fit:cover;border:2px solid var(--accent)}
+.post-my-name{font-size:14px;font-weight:700}
+.post-my-handle{font-size:13px;color:var(--text2)}
+.post-ta{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:17px;resize:none;min-height:72px;line-height:1.55;caret-color:var(--accent)}
+.post-ta::placeholder{color:var(--text3)}
+.post-img-preview{margin:12px 0;border-radius:18px;overflow:hidden;display:none;position:relative}
+.post-img-preview img{width:100%;max-height:220px;object-fit:cover;display:block}
+.img-remove{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,.65);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.post-sep{height:1px;background:var(--border);margin:12px 0}
+.post-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.p-tool{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:12px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.p-tool:active{background:var(--surface2)}
+.post-submit{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;padding:14px;color:#fff;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px var(--accent-glow);margin-top:16px;width:100%}
+.post-submit:active{transform:scale(.97)}
+
+/* COMMENTS */
+.comments-overlay{position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:600;display:none;align-items:flex-end;justify-content:center}
+.comments-overlay.open{display:flex}
+.comments-sheet{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:28px 28px 0 0;width:100%;max-width:600px;height:72vh;display:flex;flex-direction:column;animation:sUp .34s cubic-bezier(.16,1,.3,1)}
+.cm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.cm-title{font-size:16px;font-weight:800}
+.cm-close{width:32px;height:32px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cm-list{flex:1;overflow-y:auto;padding:14px 18px;scrollbar-width:none}
+.cm-list::-webkit-scrollbar{display:none}
+.cm-item{display:flex;gap:10px;margin-bottom:18px}
+.cm-av{width:36px;height:36px;border-radius:13px;object-fit:cover;flex-shrink:0;cursor:pointer}
+.cm-user{font-size:13px;font-weight:700}
+.cm-text{font-size:14px;color:var(--text2);margin-top:3px;line-height:1.4}
+.cm-actions{display:flex;gap:14px;align-items:center;margin-top:6px}
+.cm-time{font-size:11px;color:var(--text3)}
+.cm-like-btn{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text3);cursor:pointer;transition:color .15s}
+.cm-reply-link{font-size:12px;color:var(--accent-light);cursor:pointer;font-weight:600}
+.cm-replies{margin-top:8px;border-left:2px solid var(--border2);padding-left:12px;display:none;flex-direction:column;gap:10px}
+.cm-replies.open{display:flex}
+.cm-reply-item{display:flex;gap:8px}
+.cm-reply-av{width:28px;height:28px;border-radius:10px;object-fit:cover;flex-shrink:0;cursor:pointer}
+.cm-reply-user{font-size:12px;font-weight:700}
+.cm-reply-text{font-size:13px;color:var(--text2);margin-top:2px}
+.reply-inp-row{display:none;gap:8px;margin-top:8px;border-left:2px solid var(--accent);padding-left:12px}
+.reply-inp-row.open{display:flex}
+.reply-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:9px 14px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;outline:none}
+.reply-inp::placeholder{color:var(--text3)}
+.reply-send{width:36px;height:36px;border-radius:12px;flex-shrink:0;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.reply-send:active{transform:scale(.88)}
+.cm-input-row{display:flex;gap:10px;padding:12px 14px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0}
+.cm-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:22px;padding:11px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none}
+.cm-inp::placeholder{color:var(--text3)}
+.cm-send{background:var(--accent);border:none;border-radius:14px;width:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s}
+.cm-send:active{transform:scale(.88)}
+
+/* USER PROFILE MODAL */
+.uprofile-overlay{position:absolute;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(16px);z-index:700;display:none;align-items:flex-end;justify-content:center}
+.uprofile-overlay.open{display:flex}
+.uprofile-sheet{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:28px 28px 0 0;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;animation:sUp .32s cubic-bezier(.16,1,.3,1)}
+.up-top{position:relative;flex-shrink:0}
+.up-banner{width:100%;height:160px;object-fit:cover;display:block}
+.up-banner-grad{width:100%;height:160px;background:linear-gradient(135deg,#3B1F8C,#7C3AED);display:block}
+.up-close{position:absolute;top:14px;right:14px;width:34px;height:34px;background:rgba(0,0,0,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.up-av-row{padding:0 18px;margin-top:-44px;position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:space-between}
+.up-av{width:88px;height:88px;border-radius:28px;object-fit:cover;border:4px solid var(--bg2);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.up-follow-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;padding:10px 22px;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:4px}
+.up-follow-btn.following{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.up-follow-btn:active{transform:scale(.97)}
+.up-info{padding:12px 18px 0}
+.up-name{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.up-handle{font-size:13px;color:var(--text2);margin-top:2px}
+.up-bio{font-size:14px;color:var(--text2);line-height:1.5;margin-top:8px}
+.up-online{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);font-size:12px;font-weight:700;color:var(--green);margin-top:7px}
+.up-stats{display:flex;gap:20px;padding:14px 18px}
+.up-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.up-stat-n{font-size:18px;font-weight:900}
+.up-stat-l{font-size:11px;color:var(--text2)}
+.up-msg-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 18px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:11px;color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.up-msg-btn:active{transform:scale(.97)}
+.up-scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.up-scroll::-webkit-scrollbar{display:none}
+.up-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:4px}
+.up-cell{aspect-ratio:1;overflow:hidden;cursor:pointer}
+.up-cell img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.up-cell:active img{transform:scale(1.08)}
+
+/* CONV OPTIONS & GENERIC ACTIONS */
+.conv-opt-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);z-index:700;display:none;align-items:flex-end;justify-content:center}
+.conv-opt-overlay.open{display:flex}
+.conv-opt-sheet{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:28px 28px 0 0;width:100%;max-width:600px;padding:0 0 max(24px,env(safe-area-inset-bottom));animation:sUp .32s cubic-bezier(.16,1,.3,1)}
+.conv-opt-user{display:flex;flex-direction:column;align-items:center;padding:22px 20px 16px;gap:8px;border-bottom:1px solid var(--border)}
+.conv-opt-av{width:64px;height:64px;border-radius:22px;object-fit:cover;border:2.5px solid var(--accent)}
+.conv-opt-grp-av{width:64px;height:64px;border-radius:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff}
+.conv-opt-name{font-size:17px;font-weight:800}
+.conv-opt-sub{font-size:13px;color:var(--text2)}
+.conv-opt-menu{padding:8px 14px}
+.conv-opt-item{display:flex;align-items:center;gap:14px;padding:13px 8px;border-radius:14px;cursor:pointer;transition:background .15s;font-size:15px;font-weight:600}
+.conv-opt-item:active{background:var(--surface2)}
+.conv-opt-item.danger{color:var(--red)}
+.conv-opt-icon{width:36px;height:36px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.conv-opt-close{margin:10px 14px 0;width:calc(100% - 28px);padding:14px;background:var(--surface2);border:none;border-radius:16px;color:var(--text2);font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s}
+.conv-opt-close:active{transform:scale(.97)}
+
+/* SHARE MODAL */
+.share-sheet{background:var(--bg2);border:1px solid var(--border2);border-radius:28px 28px 0 0;width:100%;max-width:500px;display:flex;flex-direction:column;animation:sUp .34s cubic-bezier(.16,1,.3,1);max-height:80vh}
+.share-list{flex:1;overflow-y:auto;padding:0 18px 18px;scrollbar-width:none}
+.share-list::-webkit-scrollbar{display:none}
+.share-item{display:flex;align-items:center;gap:12px;padding:12px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.share-item:last-child{border-bottom:none}
+.share-send-btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-left:auto;transition:all .15s}
+.share-send-btn.sent{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.share-send-btn:active{transform:scale(.92)}
+
+/* GROUP CREATE */
+.grp-overlay{position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:700;display:none;align-items:flex-end;justify-content:center}
+.grp-overlay.open{display:flex}
+.grp-sheet{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:28px 28px 0 0;width:100%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;animation:sUp .34s cubic-bezier(.16,1,.3,1)}
+.grp-header{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.grp-name-inp{background:var(--surface2);border:1.5px solid var(--border2);border-radius:16px;padding:13px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;outline:none;margin:14px 18px;width:calc(100% - 36px);transition:border-color .2s}
+.grp-name-inp:focus{border-color:var(--accent)}
+.grp-members{flex:1;overflow-y:auto;scrollbar-width:none;padding:4px 18px 14px}
+.grp-members::-webkit-scrollbar{display:none}
+.grp-member-row{display:flex;align-items:center;gap:12px;padding:10px 0;cursor:pointer}
+.grp-check{width:24px;height:24px;border-radius:8px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.grp-check.on{background:var(--accent);border-color:var(--accent)}
+.grp-create-btn{margin:10px 18px max(18px,env(safe-area-inset-bottom));padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:14px;color:#fff;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s;box-shadow:0 4px 20px var(--accent-glow)}
+.grp-create-btn:active{transform:scale(.97)}
+
+/* GROUP INFO */
+.grpinfo-overlay{position:absolute;inset:0;background:var(--bg);z-index:750;display:none;flex-direction:column;align-items:center}
+.grpinfo-overlay.open{display:flex;animation:fadeIn .22s ease}
+.grpinfo-overlay>*{width:100%;max-width:600px}
+.grpinfo-hdr{display:flex;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top)) 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.grpinfo-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:40px}
+.grpinfo-scroll::-webkit-scrollbar{display:none}
+.grpinfo-hero{display:flex;flex-direction:column;align-items:center;padding:28px 20px 20px;gap:12px;border-bottom:1px solid var(--border)}
+.grpinfo-big-av{width:96px;height:96px;border-radius:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff}
+.grpinfo-name{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.grpinfo-sub{font-size:14px;color:var(--text2)}
+.grpinfo-acts{display:flex;justify-content:center;gap:18px;padding:18px 20px 16px;border-bottom:1px solid var(--border)}
+.grpinfo-act{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .18s}
+.grpinfo-act:active{transform:scale(.9)}
+.grpinfo-act-icon{width:52px;height:52px;border-radius:18px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center}
+.grpinfo-act-label{font-size:11px;color:var(--text2);font-weight:600}
+.grpinfo-member{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;transition:background .15s}
+.grpinfo-member:active{background:var(--surface)}
+.grpinfo-member-av{width:44px;height:44px;border-radius:15px;object-fit:cover;border:1.5px solid var(--border2);flex-shrink:0}
+.grpinfo-admin{font-size:10px;background:rgba(124,58,237,.15);color:var(--accent-light);padding:2px 8px;border-radius:20px;font-weight:700;margin-left:auto;flex-shrink:0}
+
+/* SETTINGS */
+#screen-settings{background:var(--bg)}
+.sett-hdr{display:flex;align-items:center;gap:14px;padding:max(18px,env(safe-area-inset-top)) 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sett-title{font-size:20px;font-weight:900;flex:1;letter-spacing:-.5px}
+.sett-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:40px}
+.sett-scroll::-webkit-scrollbar{display:none}
+.sett-section{padding:22px 18px 4px}
+.sett-section-label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent-light);margin-bottom:14px}
+.sett-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px}
+.sett-row{display:flex;align-items:center;padding:15px 16px;gap:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.sett-row:last-child{border-bottom:none}
+.sett-row:active{background:var(--surface2)}
+.sett-row-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sett-row-body{flex:1;min-width:0}
+.sett-row-label{font-size:15px;font-weight:700}
+.sett-row-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.sett-toggle{position:relative;width:48px;height:27px;flex-shrink:0}
+.sett-toggle input{opacity:0;width:0;height:0;position:absolute}
+.sett-track{position:absolute;inset:0;background:var(--surface3);border-radius:14px;cursor:pointer;transition:background .25s}
+.sett-toggle input:checked+.sett-track{background:var(--accent)}
+.sett-thumb{position:absolute;top:3px;left:3px;width:21px;height:21px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .25s;pointer-events:none}
+.sett-toggle input:checked~.sett-thumb{transform:translateX(21px)}
+.sett-chevron{color:var(--text3);flex-shrink:0}
+
+/* DIALOGS */
+.dialog-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);z-index:800;display:none;align-items:center;justify-content:center;padding:24px}
+.dialog-overlay.open{display:flex}
+.dialog-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;width:100%;max-width:340px;overflow:hidden;animation:fadeIn .22s ease}
+.dialog-title{font-size:16px;font-weight:800;text-align:center;padding:22px 22px 16px;border-bottom:1px solid var(--border)}
+.dialog-option{padding:16px 22px;font-size:15px;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;text-align:center}
+.dialog-option:last-child{border-bottom:none}
+.dialog-option:active{background:var(--surface2)}
+.dialog-option.muted{color:var(--text2)}
+.nick-dialog{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;width:100%;max-width:340px;padding:24px 22px;animation:fadeIn .22s ease}
+.nick-dialog-title{font-size:16px;font-weight:800;margin-bottom:6px;text-align:center}
+.nick-dialog-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px}
+.nick-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:14px;padding:13px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none;margin-bottom:14px;transition:border-color .2s}
+.nick-inp:focus{border-color:var(--accent)}
+.nick-btns{display:flex;gap:10px}
+.nick-btn{flex:1;padding:12px;border-radius:13px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;border:none}
+.nick-btn.cancel{background:var(--surface2);color:var(--text2)}
+.nick-btn.confirm{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.nick-btn:active{transform:scale(.96)}
+
+/* LOGOUT */
+.logout-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);z-index:900;display:none;align-items:center;justify-content:center;padding:24px}
+.logout-overlay.open{display:flex;animation:fadeIn .2s ease}
+.logout-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;width:100%;max-width:340px;overflow:hidden;animation:fadeIn .24s ease}
+.logout-icon-wrap{width:60px;height:60px;border-radius:20px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:28px auto 16px}
+.logout-title{font-size:20px;font-weight:900;text-align:center;padding:0 24px 8px}
+.logout-sub{font-size:14px;color:var(--text2);text-align:center;padding:0 24px 24px;line-height:1.5}
+.logout-btns{display:flex;border-top:1px solid var(--border)}
+.logout-btn{flex:1;padding:16px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;background:transparent;transition:background .15s}
+.logout-btn:active{background:var(--surface2)}
+.logout-btn.cancel{color:var(--text2);border-right:1px solid var(--border)}
+.logout-btn.confirm{color:var(--red)}
+
+/* ONBOARDING */
+.ob-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.ob-overlay.open{display:flex}
+.ob-box{background:var(--bg2);border:1px solid var(--border2);border-radius:28px;width:100%;max-width:400px;padding:36px 24px;position:relative;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6);text-align:center}
+.ob-progress{position:absolute;top:0;left:0;right:0;height:4px;background:var(--surface3)}
+.ob-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .3s ease}
+.ob-step{display:flex;flex-direction:column;gap:18px}
+.ob-step.hidden{display:none}
+.ob-av{width:86px;height:86px;border-radius:28px;object-fit:cover;margin:0 auto;border:3px solid var(--accent);box-shadow:0 0 0 1px var(--accent-glow),0 8px 24px rgba(124,58,237,.35)}
+.ob-step-count{font-size:11px;font-weight:800;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:-10px}
+.ob-title{font-size:24px;font-weight:900;letter-spacing:-.5px}
+.ob-sub{font-size:14px;color:var(--text2);line-height:1.4}
+.ob-inp{text-align:center;font-size:18px;padding:18px;border-radius:18px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;outline:none;width:100%}
+.ob-inp:focus{border-color:var(--accent)}
+.ob-btns{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.ob-back{align-self:flex-start;font-size:13px;color:var(--text2);cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:-10px}
+.ob-upload-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:2px dashed var(--border2);border-radius:20px;padding:28px 20px;background:var(--surface);cursor:pointer;transition:all .2s}
+.ob-upload-zone:active{border-color:var(--accent);background:rgba(124,58,237,.08)}
+
+/* TOAST */
+.toast-wrap{position:absolute;top:18px;left:0;right:0;z-index:9999;pointer-events:none;display:flex;justify-content:center;padding-top:env(safe-area-inset-top)}
+.toast{background:rgba(20,20,35,.95);border:1px solid var(--border2);backdrop-filter:blur(32px);border-radius:16px;padding:13px 20px;font-size:14px;font-weight:600;color:var(--text);transform:translateY(-80px);opacity:0;transition:all .32s cubic-bezier(.16,1,.3,1);max-width:300px;text-align:center}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* POWERED */
+.powered-footer{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 20px max(24px,env(safe-area-inset-bottom))}
+.powered-badge{display:flex;align-items:center;gap:7px}
+.powered-text{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--text2)}
+.powered-brand{font-size:11px;font-weight:900;letter-spacing:.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.powered-links{display:flex;gap:18px}
+.powered-link{font-size:11px;color:var(--text3);text-decoration:none;font-weight:500}
+.powered-link:active{color:var(--accent-light)}
+
+/* MISC */
+input[type="file"]{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease both}
+
+@media(min-width:600px){
+.post-overlay,.comments-overlay,.conv-opt-overlay,.grp-overlay,.uprofile-overlay{align-items:center}
+.post-sheet,.comments-sheet,.conv-opt-sheet,.grp-sheet,.uprofile-sheet,.share-sheet{border-radius:28px;border-bottom:1px solid var(--border2);max-height:85vh}
+.comments-sheet{height:600px}
+}
+@media(min-width:768px){
+#screen-auth{flex-direction:row}
+.auth-hero{flex:1;background:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;position:relative}
+.auth-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(8,8,13,.9),rgba(124,58,237,.3));backdrop-filter:blur(8px)}
+.auth-hero>div{position:relative;z-index:10;transform:translateY(-30px)}
+.auth-logo-text{font-size:140px}
+.auth-tagline{font-size:16px;letter-spacing:4px;color:rgba(255,255,255,.8)}
+.auth-form-container{width:560px;max-width:560px;background:var(--bg);border-left:1px solid var(--border);padding:0 50px}
+.auth-card{box-shadow:none;border:none;background:transparent;padding:0;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- AUTH -->
+<div id="screen-auth" class="screen active">
+<div class="auth-hero">
+<div>
+<div class="auth-logo-text">OPPA</div>
+<div class="auth-tagline">Connect · Share · Belong</div>
+</div>
+</div>
+<div class="auth-form-container">
+<div class="auth-card">
+<div class="auth-form">
+<div style="text-align:center;margin-bottom:18px">
+<h2 style="font-size:24px;font-weight:800;margin-bottom:6px">Welcome</h2>
+<p style="color:var(--text2);font-size:14px">Sign in to join OPPA.</p>
+</div>
+<button class="btn-ghost" onclick="loginWithGoogle()" style="padding:16px;font-size:15px">
+<svg width="22" height="22" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58Z"/></svg>
+Continue with Google
+</button>
+<div class="divider"><span>or use an access key</span></div>
+<button class="key-toggle-btn" id="key-toggle-btn" onclick="toggleKeyField()">
+<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+Enter an access key
+</button>
+<div class="key-field-wrap" id="key-field-wrap">
+<input class="inp" id="auth-key-input" type="text" placeholder="LVL-XXXXX-XXXXX" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;text-align:center" oninput="this.value=this.value.toUpperCase()">
+<button class="btn-primary" onclick="loginWithKey()">Continue →</button>
+</div>
+<div class="powered-footer" style="padding:16px 0 0">
+<div class="powered-badge"><span class="powered-text">Powered by</span><span class="powered-brand">LevelUp</span></div>
+<div class="powered-links"><a href="#" class="powered-link">Terms</a><a href="#" class="powered-link">Privacy</a></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen">
+<div class="app-header">
+<div class="app-logo">OPPA</div>
+<div class="header-actions">
+<div class="icon-btn">
+<svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+<div class="nav-badge" style="width:8px;height:8px;right:6px;top:6px;border-radius:50%"></div>
+</div>
+<div class="icon-btn" onclick="goTo('messages')">
+<svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+<div class="nav-badge" id="home-msg-badge">3</div>
+</div>
+</div>
+</div>
+<div class="scroll-area">
+<div class="stories-wrap"><div class="stories-scroll" id="stories-strip"></div></div>
+<div id="posts-feed"></div>
+</div>
+</div>
+
+<!-- SEARCH -->
+<div id="screen-search" class="screen">
+<div class="search-header">
+<div class="search-title">Explore</div>
+<div class="search-bar">
+<svg width="18" height="18" fill="none" stroke="#3D3D55" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+<input class="search-inp" id="search-inp" type="text" placeholder="Search users, posts…" oninput="onSearch(this.value)">
+</div>
+</div>
+<div class="scroll-area">
+<div id="search-results" style="display:none"></div>
+<div id="explore-section"><div class="section-label">Trending</div><div class="explore-grid" id="explore-grid"></div></div>
+</div>
+</div>
+
+<!-- MESSAGES -->
+<div id="screen-messages" class="screen">
+<div class="msg-header">
+<div class="msg-title">Messages</div>
+<div style="display:flex;gap:8px">
+<div class="icon-btn" onclick="openGroupCreate()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+<div class="icon-btn"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+</div>
+</div>
+<div class="msg-search-wrap">
+<div class="msg-search-rel">
+<svg width="16" height="16" fill="none" stroke="#3D3D55" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+<input class="msg-search-inp" type="text" placeholder="Search conversations…" oninput="filterConvs(this.value)">
+</div>
+</div>
+<div class="msg-tabs" style="padding:0 18px;width:100%;max-width:600px;margin:0 auto;display:flex;flex-shrink:0;border-bottom:1px solid var(--border)">
+<div class="msg-tab active" id="mtab-dms" onclick="switchMsgTab('dms')">Direct</div>
+<div class="msg-tab" id="mtab-groups" onclick="switchMsgTab('groups')">Groups</div>
+</div>
+<div class="scroll-area">
+<div id="conv-list"></div>
+<div id="group-list" style="display:none"></div>
+</div>
+</div>
+
+<!-- CHAT -->
+<div id="screen-chat" class="screen">
+<div class="chat-header">
+<div class="back-btn" onclick="goBack()"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></div>
+<div id="chat-av-slot" onclick="openChatInfo()" style="cursor:pointer;flex-shrink:0"></div>
+<div class="chat-meta" onclick="openChatInfo()">
+<div class="chat-name-h" id="chat-name-h"></div>
+<div class="chat-status" id="chat-status"></div>
+</div>
+<div class="icon-btn" onclick="openChatConvOpt()"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></div>
+</div>
+<div class="chat-msgs" id="chat-msgs"></div>
+<div class="rec-bar" id="rec-bar">
+<div class="rec-dot"></div>
+<div class="rec-txt">Recording…</div>
+<div class="rec-timer" id="rec-timer">0:00</div>
+<div class="rec-cancel" onclick="cancelRec()">Cancel</div>
+</div>
+<div class="chat-input-row">
+<div class="c-input-wrapper">
+<div class="c-act"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+<input class="c-inp" id="chat-inp" type="text" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()">
+<div class="c-act" id="mic-btn" onclick="toggleRec()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+</div>
+<div class="c-send" onclick="sendMsg()"><svg width="18" height="18" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+</div>
+</div>
+
+<!-- PROFILE -->
+<div id="screen-profile" class="screen">
+<div class="scroll-area">
+<div class="prof-header">
+<div class="prof-top-row">
+<div class="prof-username" id="my-username">@oppauser</div>
+<div class="icon-btn" onclick="goTo('settings')"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+</div>
+<div class="prof-av-section">
+<img class="prof-av" id="my-prof-av" src="https://i.pravatar.cc/150?img=12" alt="">
+<div class="prof-stats">
+<div class="stat"><div class="stat-n" id="my-posts-count">0</div><div class="stat-l">Posts</div></div>
+<div class="stat"><div class="stat-n">1.2K</div><div class="stat-l">Followers</div></div>
+<div class="stat"><div class="stat-n">387</div><div class="stat-l">Following</div></div>
+</div>
+</div>
+<div class="prof-bio" id="my-bio">✨ Living my best life · Creator · Explorer<br><span style="color:var(--accent-light)">oppa.app/me</span></div>
+<div class="daily-pills" id="daily-pills"></div>
+<div class="prof-btns">
+<button class="btn-edit-p" onclick="openEditProfile()">Edit Profile</button>
+<div class="btn-share-p" onclick="openShareModal()"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+</div>
+</div>
+<div class="prof-tabs">
+<div class="prof-tab active" onclick="switchProfTab(0,this)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+<div class="prof-tab" onclick="switchProfTab(1,this)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+<div class="prof-tab" onclick="switchProfTab(2,this)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+</div>
+<div class="prof-grid" id="prof-grid"></div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="screen-settings" class="screen">
+<div class="sett-hdr">
+<div class="back-btn" onclick="goBack()"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></div>
+<div class="sett-title">Settings</div>
+</div>
+<div class="sett-scroll">
+<div class="sett-section">
+<div class="sett-section-label">Account</div>
+<div class="sett-card">
+<div class="sett-row" onclick="openEditProfile()"><div class="sett-row-icon" style="background:rgba(96,165,250,.1)"><svg width="18" height="18" fill="none" stroke="#60A5FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Edit Profile</div><div class="sett-row-sub">Name, bio, photo, handle</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="openSettModal('email', 'Change Email', 'Enter your new email address below.', 'new@example.com', 'Update Email', false)"><div class="sett-row-icon" style="background:rgba(52,211,153,.1)"><svg width="18" height="18" fill="none" stroke="#34D399" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Email address</div><div class="sett-row-sub" id="sett-email">user@example.com</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="openSettModal('password', 'Change Password', 'Type your new secure password.', '••••••••', 'Update Password', false)"><div class="sett-row-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Password</div><div class="sett-row-sub">••••••••••</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Chats & Messages</div>
+<div class="sett-card">
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(124,58,237,.15)"><svg width="18" height="18" fill="none" stroke="#9F67FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Read receipts</div><div class="sett-row-sub">Show "Seen" under messages</div></div><label class="sett-toggle"><input type="checkbox" id="tog-read" checked onchange="onToggle('readReceipts',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(52,211,153,.1)"><svg width="18" height="18" fill="none" stroke="#34D399" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Typing indicator</div><div class="sett-row-sub">Show "Typing…" animation</div></div><label class="sett-toggle"><input type="checkbox" id="tog-typing" checked onchange="onToggle('typingIndicator',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(245,158,11,.1)"><svg width="18" height="18" fill="none" stroke="#F59E0B" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Message requests</div><div class="sett-row-sub">Allow DMs from non-followers</div></div><label class="sett-toggle"><input type="checkbox" id="tog-msgreq" checked onchange="onToggle('msgReq',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Privacy</div>
+<div class="sett-card">
+<div class="sett-row" onclick="cycleOnlineStatus()"><div class="sett-row-icon" style="background:rgba(52,211,153,.1)"><svg width="18" height="18" fill="none" stroke="#34D399" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Online status</div><div class="sett-row-sub" id="sett-online-val">Everyone can see</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="cycleLastSeen()"><div class="sett-row-icon" style="background:rgba(96,165,250,.1)"><svg width="18" height="18" fill="none" stroke="#60A5FA" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Last seen</div><div class="sett-row-sub" id="sett-lastseen-val">Shown to everyone</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Private account</div><div class="sett-row-sub">Only approved users follow you</div></div><label class="sett-toggle"><input type="checkbox" id="tog-private" onchange="onToggle('privateAccount',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Stories & Posts</div>
+<div class="sett-card">
+<div class="sett-row" onclick="cycleStoryPrivacy()"><div class="sett-row-icon" style="background:rgba(236,72,153,.1)"><svg width="18" height="18" fill="none" stroke="#EC4899" stroke-width="2.2" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Story visibility</div><div class="sett-row-sub" id="sett-story-priv">Everyone</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(124,58,237,.15)"><svg width="18" height="18" fill="none" stroke="#9F67FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Like notifications</div><div class="sett-row-sub">Notify when someone likes</div></div><label class="sett-toggle"><input type="checkbox" id="tog-like-notif" checked onchange="onToggle('likeNotif',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(245,158,11,.1)"><svg width="18" height="18" fill="none" stroke="#F59E0B" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Story reply alerts</div><div class="sett-row-sub">Notify when someone replies</div></div><label class="sett-toggle"><input type="checkbox" id="tog-story-notif" checked onchange="onToggle('storyNotif',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Security & Keys</div>
+<div class="sett-card">
+<div class="sett-row" onclick="openSettModal('2fa', 'Two-Step Verification', 'Protect your account with an extra layer of security.', null, 'Enable 2FA', false)"><div class="sett-row-icon" style="background:rgba(124,58,237,.15)"><svg width="18" height="18" fill="none" stroke="#9F67FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Two-step verification</div><div class="sett-row-sub">Extra security layer</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="openSettModal('keys', 'Access Keys', 'Generate a new LevelUp access key for third-party tools.', null, 'Generate Key', false)"><div class="sett-row-icon" style="background:rgba(245,158,11,.1)"><svg width="18" height="18" fill="none" stroke="#F59E0B" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="sett-row-body"><div class="sett-row-label">LevelUp access keys</div><div class="sett-row-sub">Manage your LVL-XXXXX keys</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="openSettModal('devices', 'Linked Devices', 'You have 1 device connected. Log out of all other sessions?', null, 'Log Out Others', true)"><div class="sett-row-icon" style="background:rgba(96,165,250,.1)"><svg width="18" height="18" fill="none" stroke="#60A5FA" stroke-width="2.2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Linked devices</div><div class="sett-row-sub">1 device connected</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Notifications</div>
+<div class="sett-card">
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(124,58,237,.15)"><svg width="18" height="18" fill="none" stroke="#9F67FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Push notifications</div><div class="sett-row-sub">All app notifications</div></div><label class="sett-toggle"><input type="checkbox" id="tog-push" checked onchange="onToggle('pushNotif',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+<div class="sett-row"><div class="sett-row-icon" style="background:rgba(52,211,153,.1)"><svg width="18" height="18" fill="none" stroke="#34D399" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Message alerts</div><div class="sett-row-sub">DMs and group messages</div></div><label class="sett-toggle"><input type="checkbox" id="tog-msg-notif" checked onchange="onToggle('msgNotif',this.checked)"><div class="sett-track"></div><div class="sett-thumb"></div></label></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-section-label">Data & Storage</div>
+<div class="sett-card">
+<div class="sett-row" onclick="openSettModal('cache', 'Clear Cache', 'Free up space on your device. Your data is perfectly safe.', null, 'Clear Cache', false)"><div class="sett-row-icon" style="background:rgba(245,158,11,.1)"><svg width="18" height="18" fill="none" stroke="#F59E0B" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Clear cache</div><div class="sett-row-sub">Free up storage space</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+<div class="sett-row" onclick="openSettModal('export', 'Export My Data', 'We will securely send a copy of your info to your email address.', null, 'Request Export', false)"><div class="sett-row-icon" style="background:rgba(96,165,250,.1)"><svg width="18" height="18" fill="none" stroke="#60A5FA" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="sett-row-body"><div class="sett-row-label">Export my data</div><div class="sett-row-sub">Download a copy of your info</div></div><svg class="sett-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+</div>
+</div>
+<div class="sett-section">
+<div class="sett-card">
+<div class="sett-row" onclick="openLogoutConfirm()"><div class="sett-row-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><div class="sett-row-body"><div class="sett-row-label" style="color:var(--red)">Log out</div></div></div>
+<div class="sett-row" onclick="openSettModal('delete', 'Delete Account', 'This action is irreversible! All your data will be permanently lost.', 'Type DELETE to confirm', 'Delete Account', true)"><div class="sett-row-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><div class="sett-row-body"><div class="sett-row-label" style="color:var(--red)">Delete account</div></div></div>
+</div>
+</div>
+<div class="powered-footer"><div class="powered-badge"><span class="powered-text">Powered by</span><span class="powered-brand">LevelUp</span></div><div class="powered-links"><a href="#" class="powered-link">Terms</a><a href="#" class="powered-link">Privacy</a></div></div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav id="bottom-nav">
+<div class="nav-item active" id="nav-home" onclick="goTo('home')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="nav-label">Home</span></div>
+<div class="nav-item" id="nav-search" onclick="goTo('search')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="nav-label">Search</span></div>
+<div class="nav-post" onclick="openPost()"><svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+<div class="nav-item" id="nav-messages" onclick="goTo('messages')">
+<div style="position:relative;display:inline-flex">
+<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+<div class="nav-badge" id="nav-msg-badge" style="top:-5px;right:-7px">3</div>
+</div>
+<span class="nav-label">Messages</span>
+</div>
+<div class="nav-item" id="nav-profile" onclick="goTo('profile')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nav-label">Profile</span></div>
+</nav>
+
+<!-- STORY VIEWER -->
+<div id="story-viewer" class="story-viewer">
+<div class="sv-progress" id="sv-progress"></div>
+<div class="sv-header">
+<img class="sv-av" id="sv-av" src="" alt="" onclick="openUserProfile(currentStoryUID)">
+<div><div class="sv-name" id="sv-name"></div><div class="sv-time" id="sv-time"></div></div>
+<div class="sv-close" onclick="closeStory()"><svg width="18" height="18" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+</div>
+<img class="sv-img" id="sv-img" src="" alt="">
+<div class="sv-reply">
+<input class="sv-reply-inp" id="sv-reply-inp" type="text" placeholder="Reply to story…" onkeydown="if(event.key==='Enter')sendStoryReply()">
+<div style="width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="sendStoryReply()"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+</div>
+</div>
+
+<!-- POST CREATOR -->
+<div class="post-overlay" id="post-overlay" onclick="if(event.target===this)closePost()">
+<div class="post-sheet">
+<div class="sheet-handle"></div>
+<div class="post-sheet-header"><div class="post-sheet-title">Create</div><div class="post-cancel" onclick="closePost()">Cancel</div></div>
+<div class="ptype-tabs" id="ptype-tabs">
+<div class="ptype-tab active" id="ptab-post" onclick="selectPostType('post')">📝 Post</div>
+<div class="ptype-tab" id="ptab-moment" onclick="selectPostType('moment')">📸 Moment</div>
+<div class="ptype-tab" id="ptab-story" onclick="selectPostType('story')">✨ Story</div>
+</div>
+<div class="post-limit-note" id="post-limit-note"></div>
+<div class="post-user-r"><img class="post-my-av" id="post-my-av" src="https://i.pravatar.cc/150?img=12" alt=""><div><div class="post-my-name" id="post-my-name">oppauser</div><div class="post-my-handle" id="post-my-handle">@oppauser · Everyone</div></div></div>
+<textarea class="post-ta" id="post-ta" placeholder="What's on your mind?" rows="3"></textarea>
+<div class="post-img-preview" id="post-img-preview"><img id="post-preview-img" src="" alt=""><div class="img-remove" onclick="removePostImg()"><svg width="14" height="14" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+<div class="post-sep"></div>
+<div class="post-tools">
+<label class="p-tool" for="img-upload"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Photo</label>
+<input type="file" id="img-upload" accept="image/*" onchange="previewImg(event)">
+<div class="p-tool" onclick="toggleAudioRec()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span id="audio-rec-txt">Audio</span></div>
+<div class="p-tool"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Location</div>
+</div>
+<button class="post-submit" id="post-submit-btn" onclick="submitPost()">Share Post</button>
+</div>
+</div>
+
+<!-- COMMENTS -->
+<div class="comments-overlay" id="comments-overlay" onclick="if(event.target===this)closeComments()">
+<div class="comments-sheet">
+<div class="cm-header"><div class="cm-title">Comments</div><div class="cm-close" onclick="closeComments()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+<div class="cm-list" id="cm-list"></div>
+<div class="cm-input-row"><img id="cm-my-av" src="https://i.pravatar.cc/150?img=12" style="width:34px;height:34px;border-radius:12px;object-fit:cover;flex-shrink:0" alt=""><input class="cm-inp" id="cm-inp" type="text" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')postComment()"><button class="cm-send" onclick="postComment()"><svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
+</div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div class="uprofile-overlay" id="uprofile-overlay" onclick="if(event.target===this)closeUserProfile()">
+<div class="uprofile-sheet">
+<div class="up-top">
+<div class="up-banner-grad" id="up-banner"></div>
+<div class="up-close" onclick="closeUserProfile()"><svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+</div>
+<div class="up-scroll">
+<div class="up-av-row">
+<img class="up-av" id="up-av" src="" alt="">
+<button class="up-follow-btn" id="up-follow-btn" onclick="toggleFollowModal()">Follow</button>
+</div>
+<div class="up-info">
+<div class="up-name" id="up-name"></div>
+<div class="up-handle" id="up-handle"></div>
+<div id="up-online" class="up-online" style="display:none"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div>Online now</div>
+<div class="up-bio" id="up-bio"></div>
+</div>
+<div class="up-stats">
+<div class="up-stat"><div class="up-stat-n" id="up-posts">0</div><div class="up-stat-l">Posts</div></div>
+<div class="up-stat"><div class="up-stat-n" id="up-followers">0</div><div class="up-stat-l">Followers</div></div>
+<div class="up-stat"><div class="up-stat-n" id="up-following">0</div><div class="up-stat-l">Following</div></div>
+</div>
+<div class="up-msg-btn" onclick="msgFromProfile()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Send a message</div>
+<div class="up-grid" id="up-grid"></div>
+</div>
+</div>
+</div>
+
+<!-- CONV OPTIONS / MY STORY OPTIONS -->
+<div class="conv-opt-overlay" id="conv-opt-overlay" onclick="if(event.target===this)closeConvOpt()">
+<div class="conv-opt-sheet">
+<div class="sheet-handle" style="margin:12px auto 0"></div>
+<div class="conv-opt-user" id="conv-opt-user"></div>
+<div class="conv-opt-menu" id="conv-opt-menu"></div>
+<button class="conv-opt-close" onclick="closeConvOpt()">Close</button>
+</div>
+</div>
+
+<div class="conv-opt-overlay" id="mystory-overlay" onclick="if(event.target===this)closeMyStoryModal()">
+<div class="conv-opt-sheet">
+<div class="sheet-handle" style="margin:12px auto 0"></div>
+<div class="dialog-title" style="border:none;padding-top:10px">My Story</div>
+<div class="conv-opt-menu">
+<div class="conv-opt-item" onclick="closeMyStoryModal(); openPost('story')">
+<div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>Add new to Story
+</div>
+<div class="conv-opt-item" onclick="closeMyStoryModal(); openStory('me')">
+<div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>View my Story
+</div>
+<div class="conv-opt-item danger" onclick="closeMyStoryModal(); deleteMyStory()">
+<div class="conv-opt-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>Delete Story
+</div>
+</div>
+<button class="conv-opt-close" onclick="closeMyStoryModal()">Cancel</button>
+</div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="dialog-overlay" id="share-overlay" onclick="if(event.target===this)closeShareModal()">
+<div class="share-sheet">
+<div class="sheet-handle" style="margin:12px auto 0"></div>
+<div class="dialog-title" style="border-bottom:none;padding-bottom:0">Share</div>
+<div class="search-bar" style="padding:14px 18px">
+<svg width="16" height="16" fill="none" stroke="#3D3D55" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+<input class="search-inp" type="text" placeholder="Search friends..." style="padding:11px 16px 11px 40px" oninput="filterShare(this.value)">
+</div>
+<div class="share-list" id="share-list"></div>
+</div>
+</div>
+
+<!-- GROUP CREATE -->
+<div class="grp-overlay" id="grp-overlay" onclick="if(event.target===this)closeGroupCreate()">
+<div class="grp-sheet">
+<div class="grp-header"><div style="font-size:18px;font-weight:800">New Group</div><div class="post-cancel" onclick="closeGroupCreate()">Cancel</div></div>
+<input class="grp-name-inp" id="grp-name-inp" type="text" placeholder="Group name…" maxlength="40">
+<div style="font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;padding:0 18px 10px">Select Members</div>
+<div class="grp-members" id="grp-members-list"></div>
+<button class="grp-create-btn" onclick="submitGroup()">Create Group</button>
+</div>
+</div>
+
+<!-- GROUP INFO -->
+<div class="grpinfo-overlay" id="grpinfo-overlay">
+<div class="grpinfo-hdr">
+<div class="back-btn" onclick="closeGroupInfo()"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></div>
+<div style="font-size:18px;font-weight:800;flex:1">Group Info</div>
+<div class="icon-btn"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+</div>
+<div class="grpinfo-scroll" id="grpinfo-scroll"></div>
+</div>
+
+<!-- MUTE DIALOG -->
+<div class="dialog-overlay" id="mute-overlay" onclick="if(event.target===this)document.getElementById('mute-overlay').classList.remove('open')">
+<div class="dialog-box">
+<div class="dialog-title">Mute notifications for…</div>
+<div class="dialog-option" onclick="muteFor('8h')">8 hours</div>
+<div class="dialog-option" onclick="muteFor('1w')">1 week</div>
+<div class="dialog-option" onclick="muteFor('always')">Always</div>
+<div class="dialog-option muted" onclick="document.getElementById('mute-overlay').classList.remove('open')">Cancel</div>
+</div>
+</div>
+
+<!-- NICKNAME DIALOG -->
+<div class="dialog-overlay" id="nick-overlay" onclick="if(event.target===this)closeNickDialog()">
+<div class="nick-dialog">
+<div class="nick-dialog-title">Custom Nickname</div>
+<p class="nick-dialog-sub" id="nick-sub">Only visible to you</p>
+<input class="nick-inp" id="nick-inp" type="text" placeholder="Ex: Bestie 🎯" maxlength="30">
+<div class="nick-btns"><button class="nick-btn cancel" onclick="closeNickDialog()">Cancel</button><button class="nick-btn confirm" onclick="confirmNickname()">Save</button></div>
+</div>
+</div>
+
+<!-- GENERIC SETTINGS MODAL -->
+<div class="dialog-overlay" id="sett-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+<div class="nick-dialog">
+<div class="nick-dialog-title" id="sett-modal-title">Title</div>
+<p class="nick-dialog-sub" id="sett-modal-desc">Desc</p>
+<input class="nick-inp" id="sett-modal-inp" type="text" placeholder="">
+<div class="nick-btns">
+<button class="nick-btn cancel" onclick="document.getElementById('sett-modal-overlay').classList.remove('open')">Cancel</button>
+<button class="nick-btn confirm" id="sett-modal-btn" onclick="confirmSettModal()">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="dialog-overlay" id="ep-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+<div class="nick-dialog" style="max-width:400px;padding:24px 20px">
+<div class="nick-dialog-title">Edit Profile</div>
+<p class="nick-dialog-sub">Update your personal information</p>
+<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+<input class="nick-inp" id="ep-name" type="text" placeholder="Name" style="margin:0">
+<input class="nick-inp" id="ep-handle" type="text" placeholder="Handle (@username)" style="margin:0">
+<textarea class="nick-inp" id="ep-bio" placeholder="Bio" rows="3" style="margin:0;resize:none;font-family:'Outfit',sans-serif"></textarea>
+</div>
+<div class="nick-btns">
+<button class="nick-btn cancel" onclick="document.getElementById('ep-overlay').classList.remove('open')">Cancel</button>
+<button class="nick-btn confirm" onclick="saveEditProfile()">Save Changes</button>
+</div>
+</div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="ob-overlay" id="ob-overlay">
+<div class="ob-box">
+<div class="ob-progress"><div class="ob-prog-fill" id="ob-prog-fill"></div></div>
+<div id="ob-step-0" class="ob-step hidden"><img id="ob-exist-av" class="ob-av" src="" alt=""><h2 class="ob-title">Welcome back, <span id="ob-exist-name" style="color:var(--accent-light)"></span>!</h2><p class="ob-sub">Keep your current profile or update it?</p><div class="ob-btns"><button class="btn-primary" onclick="keepProfile()">Keep my profile</button><button class="btn-ghost" onclick="startNewOnboarding(true)">Update profile</button></div></div>
+<div id="ob-step-1" class="ob-step hidden"><div class="ob-step-count">Step 1 of 3</div><h2 class="ob-title">Pick a username</h2><p class="ob-sub">How others will find you on OPPA.</p><input class="ob-inp" type="text" id="ob-inp-pseudo" placeholder="Ex: NeonRider42" maxlength="20"><button class="btn-primary" onclick="nextObStep(2)">Continue →</button></div>
+<div id="ob-step-2" class="ob-step hidden"><div class="ob-back" onclick="nextObStep(1)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Back</div><div class="ob-step-count">Step 2 of 3</div><h2 class="ob-title">Your age</h2><p class="ob-sub">Personalizes your experience (private).</p><input class="ob-inp" type="number" id="ob-inp-age" placeholder="Ex: 22" min="13" max="99"><button class="btn-primary" onclick="nextObStep(3)">Continue →</button></div>
+<div id="ob-step-3" class="ob-step hidden"><div class="ob-back" onclick="nextObStep(2)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Back</div><div class="ob-step-count">Step 3 of 3</div><h2 class="ob-title">Profile Photo</h2><p class="ob-sub">Add a photo so people recognize you.</p><label class="ob-upload-zone" for="ob-upload-inp" id="ob-upload-zone"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:32px;height:32px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="font-size:14px;font-weight:600">Choose photo</span></label><input type="file" id="ob-upload-inp" accept="image/*" onchange="previewObImg(event)"><img id="ob-preview-img" style="display:none;width:90px;height:90px;border-radius:28px;object-fit:cover;margin:0 auto;border:2px solid var(--accent)" alt=""><div class="ob-btns"><button class="btn-primary" onclick="finishOnboarding(false)" id="btn-ob-finish">Finish Setup 🚀</button><button class="btn-ghost" onclick="finishOnboarding(true)">Skip for now</button></div></div>
+</div>
+</div>
+
+<!-- LOGOUT CONFIRM -->
+<div class="logout-overlay" id="logout-overlay" onclick="if(event.target===this)closeLogoutConfirm()">
+<div class="logout-box">
+<div class="logout-icon-wrap"><svg width="28" height="28" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+<div class="logout-title">Log Out?</div>
+<div class="logout-sub">You'll need to sign in again to access your account and messages.</div>
+<div class="logout-btns"><button class="logout-btn cancel" onclick="closeLogoutConfirm()">Cancel</button><button class="logout-btn confirm" onclick="doLogout()">Log Out</button></div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap"><div class="toast" id="toast"></div></div>
+
+</div><!-- #app -->
+
+<script>
+/* ═══════════════════════════════════════
+STATE
+═══════════════════════════════════════ */
+let ME = { name:'oppauser', av:'https://i.pravatar.cc/150?img=12', handle:'@oppauser' };
+let currentScreen = 'auth';
+let prevScreen = 'home';
+let chatUID = null, chatGID = null, isGroupChat = false;
+let storyTimer = null;
+var currentStoryUID = null;
+let recInterval = null, recSecs = 0, isRecording = false;
+let audioRecActive = false;
+let currentPostType = 'post';
+let convOptTargetUID = null, convOptTargetGID = null;
+let profileModalUID = null;
+let selectedGrpMembers = new Set();
+let currentSettAction = null;
+
+/* ═══════════════════════════════════════
+DATA
+═══════════════════════════════════════ */
+const USERS = [
+{id:1, name:'Luna', handle:'@luna_captures', av:'https://i.pravatar.cc/150?img=5', bio:'Photographer 📸 · Golden hour lover', followers:12400, following:843, online:true, followed:false},
+{id:2, name:'Zack', handle:'@zack.beats', av:'https://i.pravatar.cc/150?img=3', bio:'Music producer 🎧 · EP dropping soon', followers:8300, following:210, online:true, followed:true },
+{id:3, name:'Amélie', handle:'@ameliefr', av:'https://i.pravatar.cc/150?img=9', bio:'Travel addict ✈️ · 38 countries visited',followers:5100, following:412, online:false, followed:false},
+{id:4, name:'Kai', handle:'@kai.design', av:'https://i.pravatar.cc/150?img=60', bio:'UI/UX designer 🎨 · Figma addict', followers:21000, following:156, online:true, followed:false},
+{id:5, name:'Sofia', handle:'@sofia.codes', av:'https://i.pravatar.cc/150?img=47', bio:'Dev & creator 💻 · TypeScript forever', followers:3800, following:289, online:false, followed:true },
+{id:6, name:'Marcus', handle:'@marcusfit', av:'https://i.pravatar.cc/150?img=15', bio:'Fitness 💪 · 5AM club forever', followers:9200, following:731, online:true, followed:false},
+{id:7, name:'Yuki', handle:'@yukiart', av:'https://i.pravatar.cc/150?img=44', bio:'Digital artist 🎭 · NFTs & prints', followers:14600, following:502, online:false, followed:false},
+{id:8, name:'Nour', handle:'@nour.style', av:'https://i.pravatar.cc/150?img=25', bio:'Fashion ✨ · Paris / Dubai', followers:31000, following:234, online:true, followed:false},
+{id:9, name:'Jordan', handle:'@jordangames', av:'https://i.pravatar.cc/150?img=33', bio:'Gamer 🎮 · Twitch Streamer · Ranked', followers:47200, following:88, online:true, followed:false},
+{id:10, name:'Priya', handle:'@priya.tech', av:'https://i.pravatar.cc/150?img=49', bio:'ML engineer 🤖 · Google · Open source', followers:6700, following:318, online:false, followed:false},
+{id:11, name:'Théo', handle:'@theo_music', av:'https://i.pravatar.cc/150?img=18', bio:'DJ & beatmaker 🎹 · Soundcloud', followers:15800, following:641, online:true, followed:false},
+{id:12, name:'Célia', handle:'@celiavlog', av:'https://i.pravatar.cc/150?img=36', bio:'YouTuber 🎬 · 2.1M subs · Lifestyle', followers:89000, following:112, online:false, followed:true },
+];
+
+let STORIES = [
+{uid:9, img:'https://picsum.photos/seed/sg1/400/700', time:'1m ago'},
+{uid:11, img:'https://picsum.photos/seed/sm1/400/700', time:'4m ago'},
+{uid:1, img:'https://picsum.photos/seed/s1/400/700', time:'12m ago'},
+{uid:2, img:'https://picsum.photos/seed/s2/400/700', time:'18m ago'},
+{uid:4, img:'https://picsum.photos/seed/s4/400/700', time:'40m ago', seen:true},
+{uid:12, img:'https://picsum.photos/seed/sv1/400/700', time:'1h ago', seen:true},
+{uid:3, img:'https://picsum.photos/seed/s3/400/700', time:'1h ago', seen:true},
+];
+
+var POSTS = [
+{id:1, uid:9, img:'https://picsum.photos/seed/gm1/800/600', caption:'Rank 1 global 🎮🏆 600h of grind. Clip in bio!', likes:6834, liked:false, comments:312, time:'3m', ratio:'land'},
+{id:2, uid:4, text:'Just shipped the new design system 🚀 6 months of work, hundreds of components, finally live! What do you think?', likes:312, liked:false, comments:28, time:'15m'},
+{id:3, uid:1, img:'https://picsum.photos/seed/p1/800/600', caption:'Golden hour hits different in Paris 🗼✨', likes:847, liked:false, comments:42, time:'28m', ratio:'land'},
+{id:4, uid:11, img:'https://picsum.photos/seed/mu1/800/600', caption:'In the studio until 4am 🎹🔥 New track almost ready.', likes:2194, liked:true, comments:87, time:'45m', ratio:'land'},
+{id:5, uid:8, img:'https://picsum.photos/seed/p3/800/900', caption:'New collection drop 🖤✨ Limited to 200 pieces.', likes:4231, liked:true, comments:189, time:'1h', ratio:'sq'},
+{id:6, uid:6, img:'https://picsum.photos/seed/p4/800/600', caption:'Morning grind never stops 💪 5am club hits different.', likes:921, liked:false, comments:67, time:'2h', ratio:'land'},
+{id:7, uid:7, img:'https://picsum.photos/seed/p5/800/800', caption:'Latest piece — "Digital Solitude" 🎭 Link in bio.', likes:2847, liked:false, comments:143, time:'3h', ratio:'sq'},
+{id:8, uid:12, img:'https://picsum.photos/seed/vlog1/800/450', caption:'New vlog UP 🎬✨ 72h without sleep for this.', likes:15600,liked:false, comments:893, time:'4h', ratio:'land'},
+{id:9, uid:3, text:"Just landed in Japan for the first time 🇯🇵 The energy here is unreal. Any recommendations? Drop them below 👇", likes:156, liked:false, comments:89, time:'4h'},
+{id:10, uid:2, img:'https://picsum.photos/seed/p7/800/600', caption:'Studio session 🎵 New EP dropping next Friday 🔥', likes:1823, liked:false, comments:204, time:'5h', ratio:'land'},
+];
+
+var CONVS = [
+{uid:1, pinned:false, muted:false, nickname:null, msgs:[{r:true,t:'Hey! Love your latest shots 📸',time:'10:24'},{r:false,t:'Thank you! Practicing a lot lately',time:'10:26'},{r:true,t:'Wanna collab sometime?',time:'10:31'},{r:false,t:'YES! Let\'s plan it 🙌',time:'10:33'},{r:true,v:true,dur:'0:12',time:'10:45'}], unread:2},
+{uid:2, pinned:false, muted:false, nickname:null, msgs:[{r:true,t:'Bro check this beat 🔥',time:'Yesterday'},{r:true,v:true,dur:'0:34',time:'Yesterday'},{r:false,t:'CRAZY 🤯 when dropping?',time:'Yesterday'},{r:true,t:'Next Friday, collab with Kai',time:'Yesterday'}], unread:0},
+{uid:4, pinned:true, muted:false, nickname:'Design bro 🎨', msgs:[{r:true,t:'Check the Figma link I sent',time:'Mon'},{r:false,t:'The new library looks 🔥',time:'Mon'},{r:true,t:'Thanks, your feedback helped a ton',time:'Mon'}], unread:1},
+{uid:8, pinned:false, muted:false, nickname:null, msgs:[{r:true,t:'The new collection dropped! 💜',time:'Sun'},{r:false,t:'Already copped two pieces 😭',time:'Sun'},{r:true,t:'OMG you\'re the best!! ✨',time:'Sun'}], unread:0},
+{uid:5, pinned:false, muted:true, nickname:null, msgs:[{r:true,t:'I fixed that bug btw',time:'Fri'},{r:false,t:'Finally! What was the issue?',time:'Fri'},{r:true,t:'Race condition in auth flow lol',time:'Fri'}], unread:0},
+{uid:12, pinned:false, muted:false, nickname:null, msgs:[{r:true,t:'New vlog is up!! 🎬',time:'Thu'},{r:false,t:'Just watched it, absolutely love it!',time:'Thu'}], unread:0},
+];
+
+var GROUPS = [
+{id:'g1', name:'Design Crew 🎨', memberIds:[1,4,7], pinned:false, muted:false, msgs:[{uid:4,t:'New project brief landed 🚀',time:'10:30'},{uid:1,t:'Love the direction!',time:'10:31'},{uid:'me',t:'Can\'t wait to see the final',time:'10:32'}], unread:2},
+{id:'g2', name:'Music Squad 🎵', memberIds:[2,11,6], pinned:true, muted:false, msgs:[{uid:11,t:'New track dropping Friday 🔥',time:'Yesterday'},{uid:2,t:'EP collab confirmed!',time:'Yesterday'},{uid:'me',t:'Hype!! 🎧',time:'Yesterday'}], unread:0},
+];
+
+const COMMENTS = [
+{uid:1, text:'Absolutely stunning 😍 The lighting is perfect!', time:'2m ago', likes:24, replies:[{uid:4,text:'Totally agree, flawless 👌'},{uid:9,text:'Looks like a magazine cover 🔥'}]},
+{uid:4, text:'The composition is perfect 👌 Waiting for the next.',time:'8m ago', likes:11, replies:[]},
+{uid:8, text:'You always capture the vibe ✨', time:'15m ago', likes:38, replies:[{uid:6,text:'The colors 😭🔥'}]},
+{uid:6, text:'Goals!! Where was this taken?', time:'22m ago', likes:7, replies:[]},
+{uid:2, text:'🔥🔥🔥 Nothing else to say', time:'34m ago', likes:5, replies:[]},
+{uid:11, text:'Immaculate vibes, hats off 🎩', time:'38m ago', likes:17, replies:[]},
+];
+
+const EXPLORE_IMGS = Array.from({length:12},(_,i)=>`https://picsum.photos/seed/e${i+1}/400/400`);
+const PROFILE_IMGS = Array.from({length:9},(_,i)=>`https://picsum.photos/seed/pr${i+1}/400/400`);
+
+/* ═══════════════════════════════════════
+DAILY LIMITS
+═══════════════════════════════════════ */
+function getDailyKey(){ return 'oppa_daily_'+new Date().toDateString(); }
+function getDailyLimits(){ try{ return JSON.parse(localStorage.getItem(getDailyKey())||'{}'); }catch{ return {}; } }
+function incDaily(type){ const d=getDailyLimits(); d[type]=(d[type]||0)+1; localStorage.setItem(getDailyKey(),JSON.stringify(d)); }
+function canPost(type){ const d=getDailyLimits(); if(type==='story' || type==='moment') return ((d.story||0) + (d.moment||0)) < 2; return true; }
+
+/* ═══════════════════════════════════════
+AUTH
+═══════════════════════════════════════ */
+function loginWithGoogle(){
+setTimeout(()=>{
+let uid=localStorage.getItem('oppa_mock_uid');
+if(!uid){ uid='user_'+Math.random().toString(36).substr(2,9); localStorage.setItem('oppa_mock_uid',uid); }
+if(!sessionStorage.getItem('ob_done')){ checkOnboarding(uid); } else { transitionToHome(); }
+},200);
+}
+function loginWithKey(){
+const k=document.getElementById('auth-key-input').value.trim();
+if(!k){ showToast('⚠️ Enter a valid key'); return; }
+setTimeout(loginWithGoogle,200);
+}
+function toggleKeyField(){
+const wrap=document.getElementById('key-field-wrap');
+const btn=document.getElementById('key-toggle-btn');
+const vis=wrap.classList.contains('visible');
+wrap.classList.toggle('visible',!vis);
+btn.innerHTML=vis
+? '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Enter an access key'
+: '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancel';
+if(!vis) setTimeout(()=>document.getElementById('auth-key-input').focus(),100);
+}
+function checkOnboarding(uid){
+const saved=localStorage.getItem('oppa_mock_profile_'+uid);
+if(saved){ const d=JSON.parse(saved); document.getElementById('ob-exist-name').textContent=d.name; document.getElementById('ob-exist-av').src=d.av||`https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=7C3AED&color=fff`; openObStep(0); }
+else{ openObStep(1); }
+}
+function openObStep(s){
+document.getElementById('ob-overlay').classList.add('open');
+document.querySelectorAll('.ob-step').forEach(el=>el.classList.add('hidden'));
+document.getElementById('ob-step-'+s).classList.remove('hidden');
+const pct={0:'0%',1:'33%',2:'66%',3:'100%'};
+document.getElementById('ob-prog-fill').style.width=pct[s]||'0%';
+}
+function nextObStep(s){ openObStep(s); }
+function keepProfile(){
+const uid=localStorage.getItem('oppa_mock_uid');
+const saved=uid?localStorage.getItem('oppa_mock_profile_'+uid):null;
+if(saved){ const d=JSON.parse(saved); ME.name=d.name; ME.av=d.av; ME.handle=d.handle; }
+document.getElementById('ob-overlay').classList.remove('open');
+sessionStorage.setItem('ob_done','true');
+transitionToHome();
+}
+function startNewOnboarding(edit){
+if(edit){ const uid=localStorage.getItem('oppa_mock_uid'); const s=uid?localStorage.getItem('oppa_mock_profile_'+uid):null; if(s){ const d=JSON.parse(s); document.getElementById('ob-inp-pseudo').value=d.name||''; document.getElementById('ob-inp-age').value=d.age||''; } }
+openObStep(1);
+}
+var _obFile=null;
+function previewObImg(e){
+const file=e.target.files[0]; if(!file) return; _obFile=file;
+const reader=new FileReader();
+reader.onload=ev=>{
+document.getElementById('ob-upload-zone').style.display='none';
+const img=document.getElementById('ob-preview-img'); img.src=ev.target.result; img.style.display='block';
+};
+reader.readAsDataURL(file);
+}
+function finishOnboarding(skip){
+const name=document.getElementById('ob-inp-pseudo').value.trim();
+const age=document.getElementById('ob-inp-age').value.trim();
+if(!name||!age){ showToast('⚠️ Username and age required!'); openObStep(name?2:1); return; }
+const btn=document.getElementById('btn-ob-finish'); btn.textContent='Setting up…'; btn.disabled=true;
+let av=`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=7C3AED&color=fff`;
+if(!skip&&_obFile){ av=URL.createObjectURL(_obFile); }
+const handle='@'+name.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9_.]/g,'');
+const uid=localStorage.getItem('oppa_mock_uid')||'user_anon';
+const data={uid,name,age,av,handle};
+localStorage.setItem('oppa_mock_profile_'+uid,JSON.stringify(data));
+ME.name=name; ME.av=av; ME.handle=handle;
+sessionStorage.setItem('ob_done','true');
+document.getElementById('ob-overlay').classList.remove('open');
+btn.textContent='Finish Setup 🚀'; btn.disabled=false;
+setTimeout(() => transitionToHome(), 200);
+}
+function transitionToHome(){
+document.getElementById('screen-auth').classList.remove('active');
+document.getElementById('screen-home').classList.add('active');
+document.getElementById('bottom-nav').style.display='flex';
+currentScreen='home'; renderFeed(); updateMyUI(); updateDailyPills();
+}
+function openLogoutConfirm(){ document.getElementById('logout-overlay').classList.add('open'); }
+function closeLogoutConfirm(){ document.getElementById('logout-overlay').classList.remove('open'); }
+function doLogout(){
+sessionStorage.removeItem('ob_done');
+closeLogoutConfirm();
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById('screen-auth').classList.add('active');
+document.getElementById('bottom-nav').style.display='none';
+currentScreen='auth';
+}
+
+/* ═══════════════════════════════════════
+NAVIGATION
+═══════════════════════════════════════ */
+function u(id){ return USERS.find(x=>x.id===id); }
+function goTo(screen){
+const old=document.getElementById('screen-'+currentScreen);
+const next=document.getElementById('screen-'+screen);
+if(!next||screen===currentScreen) return;
+old.classList.remove('active'); next.classList.add('active');
+prevScreen=currentScreen; currentScreen=screen;
+const noNav=['auth','chat','settings'];
+document.getElementById('bottom-nav').style.display=noNav.includes(screen)?'none':'flex';
+document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+const an=document.getElementById('nav-'+screen); if(an) an.classList.add('active');
+if(screen==='home') renderFeed();
+if(screen==='search') renderSearch();
+if(screen==='messages'){ renderConvs(); renderGroups(); }
+if(screen==='profile') renderProfile();
+}
+function goBack(){ goTo(prevScreen); }
+
+/* ═══════════════════════════════════════
+MY UI & SETTINGS MODALS
+═══════════════════════════════════════ */
+function updateMyUI(){
+const el=document.getElementById('my-username'); if(el) el.textContent=ME.handle;
+const av=document.getElementById('my-prof-av'); if(av) av.src=ME.av;
+const pav=document.getElementById('post-my-av'); if(pav) pav.src=ME.av;
+const pn=document.getElementById('post-my-name'); if(pn) pn.textContent=ME.name;
+const ph=document.getElementById('post-my-handle'); if(ph) ph.textContent=ME.handle+' · Everyone';
+const cmav=document.getElementById('cm-my-av'); if(cmav) cmav.src=ME.av;
+}
+function updateDailyPills(){
+const d=getDailyLimits();
+const total = (d.story||0) + (d.moment||0);
+const remain = Math.max(0, 2 - total);
+const isOk = remain > 0;
+const pills=document.getElementById('daily-pills'); if(!pills) return;
+pills.innerHTML=
+`<div class="daily-pill ${isOk?'ok':'full'}"><span>${isOk?'📸':'❌'}</span>${remain} visual post${remain!==1?'s':''} left today</div>`;
+}
+
+/* Generic Settings Modal Logic */
+function openSettModal(action, title, desc, inputPlaceholder, btnText, isDanger) {
+    currentSettAction = action;
+    document.getElementById('sett-modal-title').textContent = title;
+    document.getElementById('sett-modal-desc').textContent = desc;
+    
+    const inp = document.getElementById('sett-modal-inp');
+    if(inputPlaceholder) {
+        inp.style.display = 'block';
+        inp.placeholder = inputPlaceholder;
+        inp.value = '';
+    } else {
+        inp.style.display = 'none';
+    }
+    
+    const btn = document.getElementById('sett-modal-btn');
+    btn.textContent = btnText;
+    btn.style.background = isDanger ? 'var(--red)' : 'linear-gradient(135deg,var(--accent),var(--accent2))';
+    
+    document.getElementById('sett-modal-overlay').classList.add('open');
+    if(inputPlaceholder) setTimeout(() => inp.focus(), 100);
+}
+
+function confirmSettModal() {
+    const val = document.getElementById('sett-modal-inp').value.trim();
+    if(currentSettAction === 'delete') {
+        if(val !== 'DELETE') {
+            showToast('⚠️ Type DELETE to confirm');
+            return;
+        } else {
+            document.getElementById('sett-modal-overlay').classList.remove('open');
+            setTimeout(() => doLogout(), 300);
+            return;
+        }
+    }
+    
+    document.getElementById('sett-modal-overlay').classList.remove('open');
+    if(currentSettAction === 'email' && val) {
+        document.getElementById('sett-email').textContent = val;
+    }
+}
+
+/* Edit Profile Modal Logic */
+function openEditProfile() {
+    document.getElementById('ep-name').value = ME.name;
+    document.getElementById('ep-handle').value = ME.handle;
+    
+    const bioText = document.getElementById('my-bio').innerHTML.split('<br>')[0].replace(/<[^>]*>?/gm, '');
+    document.getElementById('ep-bio').value = bioText;
+    
+    document.getElementById('ep-overlay').classList.add('open');
+}
+
+function saveEditProfile() {
+    const name = document.getElementById('ep-name').value.trim();
+    const handle = document.getElementById('ep-handle').value.trim();
+    const bio = document.getElementById('ep-bio').value.trim();
+    
+    if(!name || !handle) {
+        showToast('⚠️ Name and Handle required');
+        return;
+    }
+    
+    document.getElementById('ep-overlay').classList.remove('open');
+    ME.name = name;
+    ME.handle = handle.startsWith('@') ? handle : '@' + handle;
+    
+    document.getElementById('my-username').textContent = ME.handle;
+    document.getElementById('my-bio').innerHTML = `${bio}<br><span style="color:var(--accent-light)">oppa.app/me</span>`;
+    updateMyUI();
+}
+
+/* Share Modal Logic */
+function openShareModal() {
+    document.getElementById('share-overlay').classList.add('open');
+    renderShareList();
+}
+function closeShareModal() {
+    document.getElementById('share-overlay').classList.remove('open');
+}
+function renderShareList(filter = '') {
+    const list = document.getElementById('share-list');
+    const friends = USERS.filter(u => u.name.toLowerCase().includes(filter.toLowerCase()) || u.handle.toLowerCase().includes(filter.toLowerCase())).slice(0, 10);
+    list.innerHTML = friends.map(u => `
+        <div class="share-item">
+            <img src="${u.av}" style="width:44px;height:44px;border-radius:15px;object-fit:cover">
+            <div style="flex:1">
+                <div style="font-size:14px;font-weight:700">${u.name}</div>
+                <div style="font-size:12px;color:var(--text2)">${u.handle}</div>
+            </div>
+            <button class="share-send-btn" onclick="sendShareItem(this)">Send</button>
+        </div>
+    `).join('');
+}
+function filterShare(val) {
+    renderShareList(val);
+}
+function sendShareItem(btn) {
+    btn.textContent = 'Sent';
+    btn.classList.add('sent');
+    btn.disabled = true;
+}
+
+/* My Story Modal Logic */
+function openMyStoryModal() {
+    document.getElementById('mystory-overlay').classList.add('open');
+}
+function closeMyStoryModal() {
+    document.getElementById('mystory-overlay').classList.remove('open');
+}
+function deleteMyStory() {
+    STORIES = STORIES.filter(s => s.uid !== 'me');
+    renderFeed();
+}
+
+/* ═══════════════════════════════════════
+STORIES
+═══════════════════════════════════════ */
+function renderFeed(){ renderStories(); renderPosts(); }
+function renderStories(){
+const d=getDailyLimits(); const storyFull=(d.story||0)>=1;
+const hasMyStory = STORIES.some(s => s.uid === 'me');
+let myAv = ME.av;
+if (hasMyStory) {
+    myAv = STORIES.find(s => s.uid === 'me').img;
+}
+let h=`<div class="story-item" onclick="${hasMyStory ? 'openMyStoryModal()' : "openPost('story')"}"><div class="story-add-btn${hasMyStory ? ' story-ring' : ''}" style="${hasMyStory ? 'border:none; padding:2.5px; background:linear-gradient(135deg,#7C3AED,#EC4899,#F59E0B);' : ''}">`+
+(hasMyStory ? `<div class="story-inner"><img src="${myAv}" style="width:100%;height:100%;object-fit:cover"></div>` : `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`) +
+(storyFull && !hasMyStory ?'<div class="limit-dot">!</div>':'')+`</div><div class="story-name">Your Story</div></div>`;
+
+STORIES.forEach(s=>{
+if (s.uid === 'me') return;
+const user=u(s.uid);
+h+=`<div class="story-item" onclick="openStory(${s.uid})"><div class="story-ring${s.seen?' seen':''}"><div class="story-inner"><img src="${user.av}" alt="" loading="lazy"></div></div><div class="story-name">${user.name}</div></div>`;
+});
+document.getElementById('stories-strip').innerHTML=h;
+}
+function openStory(uid){
+currentStoryUID=uid;
+const story=STORIES.find(s=>s.uid===uid); 
+const user = uid === 'me' ? {name: ME.name, av: ME.av} : u(uid);
+document.getElementById('sv-av').src=user.av;
+document.getElementById('sv-name').textContent=user.name;
+document.getElementById('sv-time').textContent=story.time;
+document.getElementById('sv-img').src=story.img;
+const progs=document.getElementById('sv-progress');
+progs.innerHTML=STORIES.map((_,i)=>`<div class="sv-prog"><div class="sv-prog-fill" id="sp${i}"></div></div>`).join('');
+document.getElementById('story-viewer').classList.add('open');
+const idx=STORIES.findIndex(s=>s.uid===uid);
+const fill=document.getElementById('sp'+idx);
+if(fill){ fill.style.transition='width 5s linear'; setTimeout(()=>fill.style.width='100%',50); }
+storyTimer=setTimeout(closeStory,5200);
+}
+function closeStory(){ document.getElementById('story-viewer').classList.remove('open'); clearTimeout(storyTimer); }
+function sendStoryReply(){
+const inp=document.getElementById('sv-reply-inp');
+const text=inp.value.trim();
+const sname=document.getElementById('sv-name').textContent;
+if(!text){ setTimeout(() => closeStory(), 300); return; }
+const conv=CONVS.find(c=>{ const us=u(c.uid); return us&&us.name===sname; });
+const now=new Date(); const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+if(conv) conv.msgs.push({r:false,t:`↩️ "${text}" (story reply)`,time});
+inp.value=''; closeStory();
+}
+
+/* ═══════════════════════════════════════
+POSTS
+═══════════════════════════════════════ */
+function renderPosts(){
+document.getElementById('posts-feed').innerHTML=POSTS.map(p=>postHTML(p)).join('');
+}
+function postHTML(p){
+const user=p.uid==='me'?{name:ME.name,av:ME.av,handle:ME.handle}:u(p.uid);
+if(!user) return '';
+const imgSec=p.img?`<div class="post-img post-img-${p.ratio||'land'}" ondblclick="quickLike(${p.id},this)"><img src="${p.img}" alt="" loading="lazy"></div>`:'';
+const txtSec=p.text?`<div class="post-text">${p.text}</div>`:'';
+const cap=p.caption&&p.caption!==''?`<div class="post-caption"><b onclick="openUserProfile(${p.uid})">${user.name}</b>${p.caption}</div>`:'';
+const badge=p.postType==='moment'?'<span class="type-badge moment">📸 Moment</span>':'';
+return `<div class="post fade-in" id="post-${p.id}">
+<div class="post-header">
+<img class="post-av" src="${user.av}" alt="" onclick="openUserProfile(${p.uid})">
+<div class="post-meta">
+<div class="post-user" onclick="openUserProfile(${p.uid})">${user.name}${badge}</div>
+<div class="post-time">${p.time} · ${user.handle}</div>
+</div>
+<div class="post-more"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></div>
+</div>
+${imgSec}${txtSec}
+<div class="post-actions">
+<div class="post-act${p.liked?' liked':''}" id="like-btn-${p.id}" onclick="toggleLike(${p.id})">
+<svg width="21" height="21" fill="${p.liked?'var(--red)':'none'}" stroke="${p.liked?'var(--red)':'currentColor'}" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+<span class="cnt">${fmtN(p.likes)}</span>
+</div>
+<div class="post-act" onclick="openComments(${p.id})">
+<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+<span class="cnt">${p.comments}</span>
+</div>
+<div class="post-act" onclick="openShareModal()">
+<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share
+</div>
+<div class="post-act" style="margin-left:auto">
+<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+</div>
+</div>
+${cap}
+<div style="padding:4px 16px 0;font-size:12px;color:var(--text3);cursor:pointer" onclick="openComments(${p.id})">View all ${p.comments} comments</div>
+</div>`;
+}
+function toggleLike(id){
+const p=POSTS.find(p=>p.id===id); if(!p) return;
+p.liked=!p.liked; p.likes+=p.liked?1:-1;
+const btn=document.getElementById('like-btn-'+id);
+btn.classList.toggle('liked',p.liked);
+btn.querySelector('svg').setAttribute('fill',p.liked?'var(--red)':'none');
+btn.querySelector('svg').setAttribute('stroke',p.liked?'var(--red)':'currentColor');
+btn.querySelector('.cnt').textContent=fmtN(p.likes);
+btn.classList.add('heart-pop'); setTimeout(()=>btn.classList.remove('heart-pop'),400);
+}
+function quickLike(id,el){
+const p=POSTS.find(p=>p.id===id); if(!p||p.liked) return;
+toggleLike(id);
+const h=document.createElement('div'); h.textContent='❤️';
+h.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:72px;animation:heartPop .6s ease both;pointer-events:none;z-index:10';
+el.style.position='relative'; el.appendChild(h); setTimeout(()=>h.remove(),700);
+}
+
+/* ═══════════════════════════════════════
+POST CREATOR
+═══════════════════════════════════════ */
+function openPost(forceType = 'post'){
+updateMyUI(); selectPostType(forceType);
+document.getElementById('post-overlay').classList.add('open');
+}
+function closePost(){
+document.getElementById('post-overlay').classList.remove('open');
+document.getElementById('post-ta').value='';
+document.getElementById('post-img-preview').style.display='none';
+audioRecActive=false; document.getElementById('audio-rec-txt').textContent='Audio';
+}
+function selectPostType(type){
+if(type!=='post'&&!canPost(type)){ showToast('⚠️ Limit of 2 visual posts per day reached'); return; }
+currentPostType=type;
+['post','moment','story'].forEach(t=>{
+const el=document.getElementById('ptab-'+t);
+if(el) {
+    el.classList.toggle('active',t===type);
+    el.classList.toggle('blocked',t!=='post'&&!canPost(t));
+}
+});
+const ta=document.getElementById('post-ta');
+const note=document.getElementById('post-limit-note');
+const btn=document.getElementById('post-submit-btn');
+if(type==='story'){ ta.style.display='none'; note.textContent='✨ Stories: Ephemeral 24h (Shared limit: 2/day)'; note.style.display='block'; btn.textContent='Share Story ✨'; }
+else if(type==='moment'){ ta.style.display='block'; ta.placeholder='Add a caption…'; note.textContent='📸 Moments: Photo post (Shared limit: 2/day)'; note.style.display='block'; btn.textContent='Share Moment 📸'; }
+else{ ta.style.display='block'; ta.placeholder="What's on your mind?"; note.style.display='none'; btn.textContent='Share Post 📝'; }
+}
+function previewImg(e){
+const file=e.target.files[0]; if(!file) return;
+const reader=new FileReader();
+reader.onload=ev=>{ document.getElementById('post-preview-img').src=ev.target.result; document.getElementById('post-img-preview').style.display='block'; };
+reader.readAsDataURL(file);
+}
+function removePostImg(){ document.getElementById('post-img-preview').style.display='none'; document.getElementById('img-upload').value=''; }
+function toggleAudioRec(){
+audioRecActive=!audioRecActive;
+document.getElementById('audio-rec-txt').textContent=audioRecActive?'● Recording…':'Audio';
+}
+function submitPost(){
+const text=document.getElementById('post-ta').value.trim();
+const hasImg=document.getElementById('post-img-preview').style.display!=='none';
+if(currentPostType==='story'){ if(!hasImg){ showToast('⚠️ Story needs a photo!'); return; } STORIES.unshift({uid:'me',img:document.getElementById('post-preview-img').src,time:'now',seen:false}); incDaily('story'); closePost(); renderFeed(); updateDailyPills(); return; }
+if(currentPostType==='moment'&&!hasImg){ showToast('⚠️ Moment needs a photo!'); return; }
+if(!text&&!hasImg){ showToast('⚠️ Add some content!'); return; }
+const p={id:POSTS.length+1,uid:'me',likes:0,liked:false,comments:0,time:'now',postType:currentPostType};
+if(hasImg){ p.img=document.getElementById('post-preview-img').src; p.ratio='land'; }
+if(text){ if(hasImg){ p.caption=text; } else { p.text=text; } }
+if(currentPostType==='moment') incDaily('moment');
+POSTS.unshift(p); closePost(); renderFeed(); updateDailyPills();
+const c=POSTS.filter(x=>x.uid==='me').length;
+const cnt=document.getElementById('my-posts-count'); if(cnt) cnt.textContent=c;
+}
+
+/* ═══════════════════════════════════════
+COMMENTS
+═══════════════════════════════════════ */
+function openComments(pid){
+document.getElementById('cm-my-av').src=ME.av;
+document.getElementById('cm-list').innerHTML=COMMENTS.map((c,i)=>{
+const user=u(c.uid); const reps=c.replies||[];
+return `<div class="cm-item fade-in">
+<img class="cm-av" src="${user.av}" alt="" onclick="openUserProfile(${user.id})">
+<div style="flex:1">
+<div class="cm-user">${user.name} <span style="font-weight:400;color:var(--text2)">${user.handle}</span></div>
+<div class="cm-text">${c.text}</div>
+<div class="cm-actions">
+<div class="cm-time">${c.time}</div>
+<div class="cm-like-btn" onclick="this.style.color='var(--red)';this.querySelector('span').textContent=parseInt(this.querySelector('span').textContent)+1">
+<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+<span>${c.likes}</span>
+</div>
+<div class="cm-reply-link" onclick="toggleReplyRow(${i})">Reply</div>
+</div>
+${reps.length?`<div class="cm-replies open" id="reps-${i}">${reps.map(r=>`<div class="cm-reply-item"><img class="cm-reply-av" src="${u(r.uid)?.av||ME.av}" alt="" onclick="openUserProfile(${r.uid})"><div><div class="cm-reply-user">${u(r.uid)?.name||ME.name}</div><div class="cm-reply-text">${r.text}</div></div></div>`).join('')}</div>`:`<div class="cm-replies" id="reps-${i}"></div>`}
+<div class="reply-inp-row" id="rrow-${i}">
+<input class="reply-inp" type="text" placeholder="Reply…" onkeydown="if(event.key==='Enter')sendReply(${i})">
+<button class="reply-send" onclick="sendReply(${i})"><svg width="13" height="13" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+</div>
+</div>
+</div>`;
+}).join('');
+document.getElementById('comments-overlay').classList.add('open');
+}
+function closeComments(){ document.getElementById('comments-overlay').classList.remove('open'); }
+function toggleReplyRow(i){
+document.querySelectorAll('.reply-inp-row').forEach(el=>{ if(el.id!=='rrow-'+i) el.classList.remove('open'); });
+document.getElementById('rrow-'+i)?.classList.toggle('open');
+}
+function sendReply(i){
+const row=document.getElementById('rrow-'+i); const inp=row?.querySelector('.reply-inp');
+const text=inp?.value.trim(); if(!text) return;
+const reps=document.getElementById('reps-'+i);
+if(reps){ reps.classList.add('open'); reps.insertAdjacentHTML('beforeend',`<div class="cm-reply-item fade-in"><img class="cm-reply-av" src="${ME.av}" alt=""><div><div class="cm-reply-user">${ME.name}</div><div class="cm-reply-text">${text}</div></div></div>`); }
+inp.value=''; row.classList.remove('open');
+}
+function postComment(){
+const inp=document.getElementById('cm-inp'); const text=inp.value.trim(); if(!text) return;
+document.getElementById('cm-list').insertAdjacentHTML('afterbegin',`<div class="cm-item fade-in"><img class="cm-av" src="${ME.av}" alt=""><div><div class="cm-user">${ME.name}</div><div class="cm-text">${text}</div><div class="cm-time" style="margin-top:6px">Just now</div></div></div>`);
+inp.value='';
+}
+
+/* ═══════════════════════════════════════
+SEARCH
+═══════════════════════════════════════ */
+function renderSearch(){
+document.getElementById('explore-grid').innerHTML=EXPLORE_IMGS.map(img=>`<div class="explore-cell"><img src="${img}" loading="lazy" alt=""></div>`).join('');
+}
+function onSearch(val){
+const r=document.getElementById('search-results'); const e=document.getElementById('explore-section');
+if(!val.trim()){ r.style.display='none'; e.style.display='block'; return; }
+const f=USERS.filter(u=>u.name.toLowerCase().includes(val.toLowerCase())||u.handle.toLowerCase().includes(val.toLowerCase()));
+r.style.display='block'; e.style.display='none';
+r.innerHTML=f.length?f.map(usr=>`<div class="user-row" id="urow-${usr.id}" onclick="openUserProfile(${usr.id})">
+<img class="u-av" src="${usr.av}" alt="">
+<div class="u-info">
+<div class="u-name">${usr.name}${usr.online?' <span style="font-size:10px;background:var(--green);border-radius:6px;padding:2px 7px;color:#000;font-weight:700;margin-left:6px">Live</span>':''}</div>
+<div class="u-handle">${usr.handle}</div>
+<div class="u-followers">${fmtN(usr.followers)} followers</div>
+</div>
+<button class="follow-btn${usr.followed?' following':''}" onclick="event.stopPropagation();toggleFollow(${usr.id})">${usr.followed?'Following':'Follow'}</button>
+</div>`).join(''):'<div style="text-align:center;padding:40px 20px;color:var(--text2)">No results found</div>';
+}
+function toggleFollow(id){
+const usr=USERS.find(x=>x.id===id); if(!usr) return;
+usr.followed=!usr.followed;
+const btn=document.querySelector('#urow-'+id+' .follow-btn');
+if(btn){ btn.classList.toggle('following',usr.followed); btn.textContent=usr.followed?'Following':'Follow'; }
+const ubtn=document.getElementById('up-follow-btn');
+if(ubtn&&profileModalUID===id){ ubtn.classList.toggle('following',usr.followed); ubtn.textContent=usr.followed?'Following':'Follow'; }
+}
+
+/* ═══════════════════════════════════════
+USER PROFILE MODAL
+═══════════════════════════════════════ */
+function openUserProfile(uid){
+if(!uid||uid==='me') return;
+const usr=u(uid); if(!usr) return;
+profileModalUID=uid;
+document.getElementById('up-av').src=usr.av;
+document.getElementById('up-name').textContent=usr.name;
+document.getElementById('up-handle').textContent=usr.handle;
+document.getElementById('up-bio').textContent=usr.bio;
+document.getElementById('up-followers').textContent=fmtN(usr.followers);
+document.getElementById('up-following').textContent=fmtN(usr.following||0);
+document.getElementById('up-posts').textContent=POSTS.filter(p=>p.uid===uid).length+Math.floor(Math.random()*8+3);
+const ob=document.getElementById('up-online'); ob.style.display=usr.online?'inline-flex':'none';
+const fb=document.getElementById('up-follow-btn'); fb.textContent=usr.followed?'Following':'Follow'; fb.classList.toggle('following',usr.followed);
+const hues=[260,300,200,30,160]; const h=hues[uid%hues.length];
+document.getElementById('up-banner').style.background=`linear-gradient(135deg,hsl(${h},70%,22%),hsl(${h+60},70%,32%))`;
+const imgs=Array.from({length:6},(_,i)=>`https://picsum.photos/seed/${uid}p${i}/400/400`);
+document.getElementById('up-grid').innerHTML=imgs.map(img=>`<div class="up-cell"><img src="${img}" loading="lazy" alt=""></div>`).join('');
+document.getElementById('uprofile-overlay').classList.add('open');
+}
+function closeUserProfile(){ document.getElementById('uprofile-overlay').classList.remove('open'); profileModalUID=null; }
+function toggleFollowModal(){ if(profileModalUID) toggleFollow(profileModalUID); }
+function msgFromProfile(){
+const uid=profileModalUID; if(!uid) return;
+if(!CONVS.find(c=>c.uid===uid)) CONVS.unshift({uid,pinned:false,muted:false,nickname:null,msgs:[],unread:0});
+closeUserProfile(); openChat(uid);
+}
+
+/* ═══════════════════════════════════════
+MESSAGES
+═══════════════════════════════════════ */
+var msgTab='dms';
+function switchMsgTab(tab){
+msgTab=tab;
+document.getElementById('mtab-dms').classList.toggle('active',tab==='dms');
+document.getElementById('mtab-groups').classList.toggle('active',tab==='groups');
+document.getElementById('conv-list').style.display=tab==='dms'?'block':'none';
+document.getElementById('group-list').style.display=tab==='groups'?'block':'none';
+}
+function renderConvs(){
+const sorted=[...CONVS].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+document.getElementById('conv-list').innerHTML=sorted.map(c=>convRowHTML(c)).join('');
+}
+function convRowHTML(c){
+const usr=u(c.uid); const last=c.msgs[c.msgs.length-1];
+const lastText=last?(last.v?'🎤 Voice message':(last.r?'':('You: '))+last.t):'Say hi! 👋';
+const dname=c.nickname||usr.name;
+return `<div class="conv" id="conv-${c.uid}" onclick="openChat(${c.uid})">
+<div class="conv-av-wrap">
+<img class="conv-av" src="${usr.av}" alt="" onclick="event.stopPropagation();openUserProfile(${usr.id})">
+${usr.online?'<div class="online-dot"></div>':''}
+</div>
+<div class="conv-info">
+<div class="conv-name">${dname}${c.pinned?' <span style="font-size:10px;color:var(--gold)">📌</span>':''}${c.muted?' <span style="font-size:11px;color:var(--text3)">🔇</span>':''}</div>
+<div class="conv-preview${c.unread?' unread':''}">${lastText}</div>
+</div>
+<div class="conv-right">
+<div class="conv-time">${last?.time||''}</div>
+${c.unread?`<div class="unread-badge">${c.unread}</div>`:''}
+</div>
+<div class="conv-opt-btn" onclick="event.stopPropagation();openConvOpt(${c.uid},false)">
+<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+</div>
+</div>`;
+}
+function filterConvs(val){
+if(!val.trim()){ renderConvs(); renderGroups(); return; }
+const fc=CONVS.filter(c=>{ const usr=u(c.uid); return usr&&(usr.name.toLowerCase().includes(val.toLowerCase())||(c.nickname&&c.nickname.toLowerCase().includes(val.toLowerCase()))); });
+document.getElementById('conv-list').innerHTML=fc.map(c=>convRowHTML(c)).join('');
+const fg=GROUPS.filter(g=>g.name.toLowerCase().includes(val.toLowerCase()));
+document.getElementById('group-list').innerHTML=fg.map(g=>groupRowHTML(g)).join('');
+}
+
+/* ═══════════════════════════════════════
+GROUPS
+═══════════════════════════════════════ */
+function renderGroups(){
+document.getElementById('group-list').innerHTML=GROUPS.map(g=>groupRowHTML(g)).join('');
+}
+function groupRowHTML(g){
+const last=g.msgs[g.msgs.length-1]; const sender=last?.uid&&last.uid!=='me'?u(last.uid):null;
+const lastText=last?(last.v?'🎤 Voice':(last.uid==='me'?'You: ':(sender?sender.name+': ':''))+last.t):'No messages yet';
+const initials=g.name.replace(/[^\w\s]/g,'').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'GP';
+return `<div class="conv" onclick="openGroupChat('${g.id}')">
+<div class="conv-grp-av" onclick="event.stopPropagation();openGroupInfo('${g.id}')">${initials}</div>
+<div class="conv-info">
+<div class="conv-name">${g.name}${g.pinned?' <span style="font-size:10px;color:var(--gold)">📌</span>':''}</div>
+<div class="conv-preview${g.unread?' unread':''}">${lastText}</div>
+</div>
+<div class="conv-right">
+<div class="conv-time">${last?.time||''}</div>
+${g.unread?`<div class="unread-badge">${g.unread}</div>`:''}
+</div>
+<div class="conv-opt-btn" onclick="event.stopPropagation();openConvOpt(null,true,'${g.id}')">
+<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+</div>
+</div>`;
+}
+
+/* GROUP CREATE */
+function openGroupCreate(){
+selectedGrpMembers=new Set();
+document.getElementById('grp-name-inp').value='';
+document.getElementById('grp-members-list').innerHTML=USERS.slice(0,10).map(usr=>`
+<div class="grp-member-row" onclick="toggleGrpMember(${usr.id},this)">
+<div class="grp-check" id="gcheck-${usr.id}"></div>
+<img src="${usr.av}" style="width:42px;height:42px;border-radius:14px;object-fit:cover;flex-shrink:0" alt="">
+<div><div style="font-size:14px;font-weight:700">${usr.name}</div><div style="font-size:12px;color:var(--text2)">${usr.handle}</div></div>
+</div>`).join('');
+document.getElementById('grp-overlay').classList.add('open');
+}
+function closeGroupCreate(){ document.getElementById('grp-overlay').classList.remove('open'); }
+function toggleGrpMember(id,row){
+const chk=document.getElementById('gcheck-'+id);
+if(selectedGrpMembers.has(id)){ selectedGrpMembers.delete(id); chk.classList.remove('on'); chk.innerHTML=''; }
+else{ selectedGrpMembers.add(id); chk.classList.add('on'); chk.innerHTML='<svg width="14" height="14" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>'; }
+}
+function submitGroup(){
+const name=document.getElementById('grp-name-inp').value.trim();
+if(!name){ showToast('⚠️ Enter a group name'); return; }
+if(selectedGrpMembers.size===0){ showToast('⚠️ Select at least 1 member'); return; }
+const gid='g'+Date.now();
+GROUPS.unshift({id:gid,name,memberIds:[...selectedGrpMembers],pinned:false,muted:false,msgs:[],unread:0});
+closeGroupCreate(); renderGroups(); switchMsgTab('groups');
+}
+
+/* GROUP INFO */
+function openGroupInfo(gid){
+const grp=GROUPS.find(g=>g.id===gid); if(!grp) return;
+const initials=grp.name.replace(/[^\w\s]/g,'').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'GP';
+document.getElementById('grpinfo-scroll').innerHTML=`
+<div class="grpinfo-hero">
+<div class="grpinfo-big-av">${initials}</div>
+<div class="grpinfo-name">${grp.name}</div>
+<div class="grpinfo-sub">${grp.memberIds.length+1} members</div>
+</div>
+<div class="grpinfo-acts">
+<div class="grpinfo-act" onclick="closeGroupInfo();openGroupChat('${gid}')"><div class="grpinfo-act-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><span class="grpinfo-act-label">Chat</span></div>
+<div class="grpinfo-act"><div class="grpinfo-act-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div><span class="grpinfo-act-label">Mute</span></div>
+<div class="grpinfo-act"><div class="grpinfo-act-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div><span class="grpinfo-act-label">Invite</span></div>
+</div>
+<div style="padding:16px 18px 8px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase">Members</div>
+<div class="grpinfo-member"><img class="grpinfo-member-av" src="${ME.av}" alt=""><div><div style="font-size:14px;font-weight:700">${ME.name}</div><div style="font-size:12px;color:var(--text2)">${ME.handle}</div></div><div class="grpinfo-admin">Admin</div></div>
+${grp.memberIds.map(id=>{const usr=u(id);if(!usr)return'';return`<div class="grpinfo-member" onclick="openUserProfile(${id})"><img class="grpinfo-member-av" src="${usr.av}" alt=""><div><div style="font-size:14px;font-weight:700">${usr.name}</div><div style="font-size:12px;color:var(--text2)">${usr.handle}</div></div></div>`;}).join('')}
+<div style="padding:16px 18px"><button style="width:100%;padding:13px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:14px;color:var(--red);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer">Leave Group</button></div>`;
+document.getElementById('grpinfo-overlay').classList.add('open');
+document.getElementById('bottom-nav').style.display='none';
+}
+function closeGroupInfo(){ document.getElementById('grpinfo-overlay').classList.remove('open'); document.getElementById('bottom-nav').style.display='flex'; }
+
+/* ═══════════════════════════════════════
+CHAT - DM
+═══════════════════════════════════════ */
+function openChat(uid){
+const usr=u(uid); if(!usr) return;
+isGroupChat=false; chatUID=uid; chatGID=null;
+const conv=CONVS.find(c=>c.uid===uid); if(conv) conv.unread=0;
+document.getElementById('chat-av-slot').innerHTML=`<img class="chat-av" src="${usr.av}" alt="">`;
+document.getElementById('chat-name-h').textContent=conv?.nickname||usr.name;
+document.getElementById('chat-status').textContent=usr.online?'● Online now':'Last seen recently';
+document.getElementById('chat-status').style.color=usr.online?'var(--green)':'var(--text3)';
+renderMessages(uid); goTo('chat');
+setTimeout(()=>{ const m=document.getElementById('chat-msgs'); m.scrollTop=m.scrollHeight; },100);
+}
+function openGroupChat(gid){
+const grp=GROUPS.find(g=>g.id===gid); if(!grp) return;
+isGroupChat=true; chatGID=gid; chatUID=null;
+grp.unread=0;
+const initials=grp.name.replace(/[^\w\s]/g,'').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'GP';
+document.getElementById('chat-av-slot').innerHTML=`<div class="chat-grp-av">${initials}</div>`;
+document.getElementById('chat-name-h').textContent=grp.name;
+document.getElementById('chat-status').textContent=`${grp.memberIds.length+1} members`;
+document.getElementById('chat-status').style.color='var(--text2)';
+renderGroupMessages(gid); goTo('chat');
+setTimeout(()=>{ const m=document.getElementById('chat-msgs'); m.scrollTop=m.scrollHeight; },100);
+}
+function renderMessages(uid){
+const conv=CONVS.find(c=>c.uid===uid);
+const readOn=document.getElementById('tog-read')?.checked!==false;
+document.getElementById('chat-msgs').innerHTML=`<div class="chat-date">Today</div>`+(conv?.msgs||[]).map(m=>{
+const dir=m.r?'recv':'sent';
+const statusHTML=(!m.r&&readOn)?`<div class="msg-status${m.seen?' seen':''}">${m.seen?'Seen':'Sent'}</div>`:'';
+if(m.v){
+const bars=Array.from({length:20},(_,i)=>{const h=4+Math.round(Math.sin(i*.7+1)*10+Math.random()*8);return`<div class="vbar" style="height:${h}px"></div>`;}).join('');
+return `<div class="bubble-row ${dir}"><div class="voice-bubble"><div class="vplay"><svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="vwave">${bars}</div><div class="vdur">${m.dur}</div></div><div style="display:flex;gap:4px;align-items:center"><div class="bubble-time">${m.time}</div>${statusHTML}</div></div>`;
+}
+return `<div class="bubble-row ${dir}"><div class="bubble">${m.t}</div><div style="display:flex;gap:4px;align-items:center"><div class="bubble-time">${m.time}</div>${statusHTML}</div></div>`;
+}).join('');
+}
+function renderGroupMessages(gid){
+const grp=GROUPS.find(g=>g.id===gid); if(!grp) return;
+document.getElementById('chat-msgs').innerHTML=`<div class="chat-date">Today</div>`+grp.msgs.map(m=>{
+if(m.uid==='me'||m.isMe) return `<div class="bubble-row sent"><div class="bubble">${m.t}</div><div class="bubble-time">${m.time}</div></div>`;
+const sender=u(m.uid);
+return `<div class="bubble-row recv grp-recv">
+<div class="grp-sender-info" onclick="openUserProfile(${m.uid})">
+<img class="grp-sender-av" src="${sender?.av||''}" alt="">
+<span class="grp-sender-name">${sender?.name||'Unknown'}</span>
+</div>
+<div class="bubble">${m.t}</div>
+<div class="bubble-time">${m.time}</div>
+</div>`;
+}).join('');
+}
+function sendMsg(){
+if(isGroupChat){ sendGroupMsg(); return; }
+const inp=document.getElementById('chat-inp'); const text=inp.value.trim(); if(!text) return;
+const conv=CONVS.find(c=>c.uid===chatUID); if(!conv) return;
+const now=new Date(); const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+conv.msgs.push({r:false,t:text,time,seen:false}); inp.value='';
+renderMessages(chatUID);
+const msgsEl=document.getElementById('chat-msgs'); setTimeout(()=>msgsEl.scrollTop=msgsEl.scrollHeight,50);
+const typingOn=document.getElementById('tog-typing')?.checked!==false;
+const delay=900+Math.random()*1200;
+const replies=['❤️','Haha yes!!','That is so true 😂','Love this!','🙌🙌','For real!','Wait what 😭','No way lmao','🔥🔥','OK but wow','Omg stop 😭','Facts frr'];
+if(typingOn){
+setTimeout(()=>{
+showTyping();
+setTimeout(()=>{
+hideTyping();
+conv.msgs.push({r:true,t:replies[Math.floor(Math.random()*replies.length)],time});
+const sent=[...conv.msgs].reverse().find(m=>!m.r&&!m.v); if(sent) sent.seen=true;
+renderMessages(chatUID); setTimeout(()=>msgsEl.scrollTop=msgsEl.scrollHeight,50);
+},1200+Math.random()*1400);
+},delay);
+} else {
+setTimeout(()=>{
+conv.msgs.push({r:true,t:replies[Math.floor(Math.random()*replies.length)],time});
+const sent=[...conv.msgs].reverse().find(m=>!m.r&&!m.v); if(sent) sent.seen=true;
+renderMessages(chatUID); setTimeout(()=>msgsEl.scrollTop=msgsEl.scrollHeight,50);
+},delay);
+}
+}
+function sendGroupMsg(){
+const inp=document.getElementById('chat-inp'); const text=inp.value.trim(); if(!text) return;
+const grp=GROUPS.find(g=>g.id===chatGID); if(!grp) return;
+const now=new Date(); const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+grp.msgs.push({uid:'me',t:text,time}); inp.value='';
+renderGroupMessages(chatGID);
+const msgsEl=document.getElementById('chat-msgs'); setTimeout(()=>msgsEl.scrollTop=msgsEl.scrollHeight,50);
+setTimeout(()=>{
+const rid=grp.memberIds[Math.floor(Math.random()*grp.memberIds.length)];
+const reps=['🔥','OK!','Yes!','Haha 😂','Let\'s go!','I agree','Makes sense','Nice!','Facts','For real'];
+grp.msgs.push({uid:rid,t:reps[Math.floor(Math.random()*reps.length)],time});
+renderGroupMessages(chatGID); setTimeout(()=>msgsEl.scrollTop=msgsEl.scrollHeight,50);
+},1500+Math.random()*1500);
+}
+function showTyping(){
+const usr=u(chatUID); if(!usr||document.getElementById('typing-row')) return;
+const msgsEl=document.getElementById('chat-msgs');
+const div=document.createElement('div'); div.id='typing-row'; div.className='typing-row fade-in';
+div.innerHTML=`<img style="width:26px;height:26px;border-radius:9px;object-fit:cover" src="${usr.av}" alt=""><div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><div style="font-size:11px;color:var(--text3);padding:3px 4px">${usr.name} is typing…</div></div>`;
+msgsEl.appendChild(div); msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+function hideTyping(){ document.getElementById('typing-row')?.remove(); }
+function openChatInfo(){
+if(isGroupChat) openGroupInfo(chatGID);
+else openUserProfile(chatUID);
+}
+function openChatConvOpt(){
+if(isGroupChat) openConvOpt(null,true,chatGID);
+else openConvOpt(chatUID,false);
+}
+
+/* ═══════════════════════════════════════
+VOICE RECORDING
+═══════════════════════════════════════ */
+function toggleRec(){ isRecording?stopRec(true):startRec(); }
+function startRec(){
+isRecording=true; recSecs=0;
+document.getElementById('rec-bar').classList.add('on');
+document.getElementById('mic-btn').style.color='var(--red)';
+recInterval=setInterval(()=>{ recSecs++; document.getElementById('rec-timer').textContent=Math.floor(recSecs/60)+':'+String(recSecs%60).padStart(2,'0'); },1000);
+}
+function stopRec(send=false){
+isRecording=false; clearInterval(recInterval);
+document.getElementById('rec-bar').classList.remove('on');
+document.getElementById('mic-btn').style.color='';
+if(send&&recSecs>0){
+const dur=Math.floor(recSecs/60)+':'+String(recSecs%60).padStart(2,'0');
+const now=new Date(); const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+if(isGroupChat){ const grp=GROUPS.find(g=>g.id===chatGID); if(grp){ grp.msgs.push({uid:'me',v:true,dur,time}); renderGroupMessages(chatGID); } }
+else{ const conv=CONVS.find(c=>c.uid===chatUID); if(conv){ conv.msgs.push({r:false,v:true,dur,time}); renderMessages(chatUID); } }
+const m=document.getElementById('chat-msgs'); setTimeout(()=>m.scrollTop=m.scrollHeight,50);
+}
+recSecs=0;
+}
+function cancelRec(){ stopRec(false); }
+
+/* ═══════════════════════════════════════
+CONV OPTIONS SHEET
+═══════════════════════════════════════ */
+function openConvOpt(uid,isGroup,gid){
+convOptTargetUID=uid; convOptTargetGID=gid||null;
+const userSection=document.getElementById('conv-opt-user');
+const menu=document.getElementById('conv-opt-menu');
+if(isGroup){
+const grp=GROUPS.find(g=>g.id==(gid||chatGID)); if(!grp) return;
+const initials=grp.name.replace(/[^\w\s]/g,'').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()||'GP';
+userSection.innerHTML=`<div class="conv-opt-grp-av">${initials}</div><div class="conv-opt-name">${grp.name}</div><div class="conv-opt-sub">${grp.memberIds.length+1} members</div>`;
+menu.innerHTML=`
+<div class="conv-opt-item" onclick="closeConvOpt();openGroupInfo('${grp.id}')"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>Group info</div>
+<div class="conv-opt-item" onclick="pinGroupItem('${grp.id}')"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>${grp.pinned?'Unpin':'Pin'} group</div>
+<div class="conv-opt-item" onclick="closeConvOpt()"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div>Mute notifications</div>
+<div class="conv-opt-item" onclick="clearGrpMsgs('${grp.id}')"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>Clear chat</div>
+<div class="conv-opt-item danger" onclick="closeConvOpt()"><div class="conv-opt-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>Leave group</div>`;
+} else {
+const conv=CONVS.find(c=>c.uid===uid); const usr=u(uid); if(!usr) return;
+const dname=conv?.nickname||usr.name;
+userSection.innerHTML=`<img class="conv-opt-av" src="${usr.av}" alt="" onclick="closeConvOpt();openUserProfile(${uid})"><div class="conv-opt-name">${dname}</div><div class="conv-opt-sub">${usr.handle} · ${usr.online?'Online':'Offline'}</div>`;
+menu.innerHTML=`
+<div class="conv-opt-item" onclick="closeConvOpt();openUserProfile(${uid})"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>View profile</div>
+<div class="conv-opt-item" onclick="pinConvItem(${uid})"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>${conv?.pinned?'Unpin':'Pin'} conversation</div>
+<div class="conv-opt-item" onclick="openMuteFor(${uid})"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div>Mute notifications</div>
+<div class="conv-opt-item" onclick="openNickDialog(${uid})"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>Edit nickname</div>
+<div class="conv-opt-item" onclick="clearDmMsgs(${uid})"><div class="conv-opt-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>Clear chat</div>
+<div class="conv-opt-item danger" onclick="blockUser(${uid})"><div class="conv-opt-icon" style="background:rgba(239,68,68,.1)"><svg width="18" height="18" fill="none" stroke="#F87171" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>Block</div>`;
+}
+document.getElementById('conv-opt-overlay').classList.add('open');
+}
+function closeConvOpt(){ document.getElementById('conv-opt-overlay').classList.remove('open'); }
+function pinConvItem(uid){ const c=CONVS.find(x=>x.uid===uid); if(c){ c.pinned=!c.pinned; closeConvOpt(); renderConvs(); } }
+function pinGroupItem(gid){ const g=GROUPS.find(x=>x.id===gid); if(g){ g.pinned=!g.pinned; closeConvOpt(); renderGroups(); } }
+function clearDmMsgs(uid){ const c=CONVS.find(x=>x.uid===uid); if(c){ c.msgs=[]; closeConvOpt(); } }
+function clearGrpMsgs(gid){ const g=GROUPS.find(x=>x.id===gid); if(g){ g.msgs=[]; closeConvOpt(); } }
+function blockUser(uid){ const usr=u(uid); closeConvOpt(); }
+function openMuteFor(uid){ convOptTargetUID=uid; closeConvOpt(); setTimeout(()=>document.getElementById('mute-overlay').classList.add('open'),200); }
+function muteFor(dur){ const labels={h8:'8 hours','1w':'1 week',always:'Always'}; const c=CONVS.find(x=>x.uid===convOptTargetUID); if(c) c.muted=true; document.getElementById('mute-overlay').classList.remove('open'); const usr=u(convOptTargetUID); renderConvs(); }
+
+/* NICKNAME */
+function openNickDialog(uid){
+convOptTargetUID=uid; closeConvOpt();
+const usr=u(uid); const conv=CONVS.find(c=>c.uid===uid);
+document.getElementById('nick-sub').textContent='Only visible to you for '+usr?.name;
+document.getElementById('nick-inp').value=conv?.nickname||'';
+setTimeout(()=>{ document.getElementById('nick-overlay').classList.add('open'); setTimeout(()=>document.getElementById('nick-inp').focus(),100); },200);
+}
+function closeNickDialog(){ document.getElementById('nick-overlay').classList.remove('open'); }
+function confirmNickname(){
+const val=document.getElementById('nick-inp').value.trim();
+const conv=CONVS.find(c=>c.uid===convOptTargetUID);
+if(conv){ conv.nickname=val||null; }
+closeNickDialog(); renderConvs();
+if(val&&chatUID===convOptTargetUID){ document.getElementById('chat-name-h').textContent=val; }
+}
+
+/* ═══════════════════════════════════════
+PROFILE
+═══════════════════════════════════════ */
+function renderProfile(){
+document.getElementById('my-username').textContent=ME.handle;
+document.getElementById('my-prof-av').src=ME.av;
+const c=POSTS.filter(p=>p.uid==='me').length;
+document.getElementById('my-posts-count').textContent=c;
+renderProfGrid();
+}
+function renderProfGrid(){
+document.getElementById('prof-grid').innerHTML=PROFILE_IMGS.map((img,i)=>`
+<div class="prof-cell">
+<img src="${img}" alt="" loading="lazy">
+${i%4===1?'<div class="reel-icon"><svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>':''}
+</div>`).join('');
+}
+function switchProfTab(i,el){
+document.querySelectorAll('.prof-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+const grid=document.getElementById('prof-grid');
+if(i===0) renderProfGrid();
+else if(i===1) grid.innerHTML=[0,2,5,7].map(j=>`<div class="prof-cell"><img src="${PROFILE_IMGS[j]}" alt="" loading="lazy"><div class="reel-icon"><svg width="14" height="14" fill="white" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div></div>`).join('');
+else grid.innerHTML=[1,4,6,8].map(j=>`<div class="prof-cell"><img src="${PROFILE_IMGS[j]}" alt="" loading="lazy"></div>`).join('');
+}
+
+/* ═══════════════════════════════════════
+SETTINGS & TOAST
+═══════════════════════════════════════ */
+function onToggle(key,val){}
+function cycleOnlineStatus(){ const opts=['Everyone can see','Friends only','Nobody']; const el=document.getElementById('sett-online-val'); const i=opts.indexOf(el.textContent); el.textContent=opts[(i+1)%opts.length]; }
+function cycleLastSeen(){ const opts=['Shown to everyone','Friends only','Hidden']; const el=document.getElementById('sett-lastseen-val'); const i=opts.indexOf(el.textContent); el.textContent=opts[(i+1)%opts.length]; }
+function cycleStoryPrivacy(){ const opts=['Everyone','Friends','Only me']; const el=document.getElementById('sett-story-priv'); const i=opts.indexOf(el.textContent); el.textContent=opts[(i+1)%opts.length]; }
+
+var toastTimer=null;
+function showToast(msg){
+if(!msg.includes('⚠️')) return; // Silences all non-error loading/action toasts
+const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ═══════════════════════════════════════
+UTILS
+═══════════════════════════════════════ */
+function fmtN(n){ if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(1)+'K'; return n; }
+
+/* ═══════════════════════════════════════
+INIT
+═══════════════════════════════════════ */
+const css=document.createElement('style');
+css.textContent='.vbar{animation:wv 1s ease-in-out infinite}';
+document.head.appendChild(css);
+</script>
+</body>
+</html>
